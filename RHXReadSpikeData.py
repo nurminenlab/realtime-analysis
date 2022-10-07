@@ -35,12 +35,12 @@ def readInt32(array, arrayIndex):
     return variable, arrayIndex
 
 def readUint16(array, arrayIndex):
-    variableBytes = array[arrayIndex : arrayIndex + 2]
+    variableBytes = array[arrayIndex : arrayIndex + 1]
     variable = int.from_bytes(variableBytes, byteorder='little', signed=False)
-    arrayIndex = arrayIndex + 2
+    arrayIndex = arrayIndex + 1
     return variable, arrayIndex
 
-def ReadWaveformDataDemo():
+def ReadSpikeDataDemo():
 
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
@@ -90,7 +90,7 @@ def ReadWaveformDataDemo():
     scommand.sendall(b'execute clearalldataoutputs')
     time.sleep(0.1)
 
-    # Send TCP commands to set up TCP Data Output Enabled for wide
+    # Send TCP commands to set up TCP Data Output Enabled for SPK
     # band of channel A-010
     scommand.sendall(b'set a-028.tcpdataoutputenabledspike true')
     time.sleep(0.1)
@@ -106,7 +106,8 @@ def ReadWaveformDataDemo():
     '''framesPerBlock = 128
     waveformBytesPerFrame = 4 + 2
     waveformBytesPerBlock = framesPerBlock * waveformBytesPerFrame + 4'''
-    waveformBytesPerBlock = 14
+
+    spikeBytesPerBlock = 14
 
     # Run controller for 1 second
     scommand.sendall(b'set runmode run')
@@ -115,16 +116,16 @@ def ReadWaveformDataDemo():
 
     # Read waveform data
     rawData = swaveform.recv(WAVEFORM_BUFFER_SIZE)
-    # sample raw data with one spike -  b'\x0fq\xe2:A-025_o\x02\x00\x01'
-    print("raw data in new file ",rawData)
-    if len(rawData) % waveformBytesPerBlock != 0:
+
+    if len(rawData) % spikeBytesPerBlock != 0:
         raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
-    numBlocks = int(len(rawData) / waveformBytesPerBlock)
+
+    numBlocks = int(len(rawData) / spikeBytesPerBlock)
 
     rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
-    amplifierTimestamps = [] # List used to contain scaled timestamp values in seconds
-    amplifierData = [] # List used to contain scaled amplifier data in microVolts
+    spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
     spikeIDarray = []
+
     for block in range(numBlocks):
         # Expect 4 bytes to be TCP Magic Number as uint32.
         # If not what's expected, raise an exception.
@@ -136,25 +137,17 @@ def ReadWaveformDataDemo():
         #   skipping 5 bytes for channel name
         rawIndex = rawIndex + 5   
 
-        #    # Expect 4 bytes to be timestamp as int32.
-        print("raw index after extracting magic number \n", rawIndex)
-        rawTimestamp = rawData[rawIndex : rawIndex+4]
-        rawTimestamp = int.from_bytes(rawTimestamp, byteorder='little', signed=True)
-        rawIndex = rawIndex+4
-        print(rawTimestamp)
-        # Multiply by 'timestep' to convert timestamp to seconds
-        amplifierTimestamps.append(rawTimestamp)
+        # Expect 4 bytes to be timestamp as int32.
+        rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
 
+        # append timestamp of every spike to the spikeTimestamp list
+        spikeTimestamp.append(rawTimestamp)
 
-        #    # Expect 2 bytes of wideband data.
+        #    Expect 1 bytes of spike ID
         #    rawSample, rawIndex = readUint16(rawData, rawIndex)
-            
-        spikeID = rawData[rawIndex:rawIndex+1]
-        spikeID = int.from_bytes(spikeID, byteorder='little', signed=False)
+        spikeID, rawIndex = readUint16(rawData, rawIndex)    
 
-            # Scale this sample to convert to microVolts
-        #    amplifierData.append(0.195 * (spikeID - 32768))
-        rawIndex = rawIndex+1
+        # append spikeID of every spike to the spikeIDarray list
         spikeIDarray.append(spikeID)
 
             
@@ -162,15 +155,13 @@ def ReadWaveformDataDemo():
     # If using matplotlib to plot is not desired, the following plot lines can be removed.
     # Data is still accessible at this point in the amplifierTimestamps and amplifierData
     #print("\n",amplifierData,"\n")
-    plt.scatter(amplifierTimestamps, spikeIDarray)
+    plt.scatter(spikeTimestamp, spikeIDarray)
     print("spike array", spikeIDarray,"\n")  
-    print("amplifier Timestamps", amplifierTimestamps)
+    print("amplifier Timestamps", spikeTimestamp)
 
     plt.title('A-025 Amplifier Data')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Voltage (uV)')
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Spike ID')
     plt.show()
 
-    return rawData, amplifierData, amplifierTimestamps
-
-rawData, amplifierData, rawTimestamp = ReadWaveformDataDemo()
+ReadSpikeDataDemo()
