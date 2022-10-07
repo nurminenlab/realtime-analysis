@@ -18,6 +18,8 @@ import time, socket
 # If plotting is not needed, calls to plt can be removed and the data
 # will still be present within the ReadWaveformDataDemo() function.
 # 'matplotlib' can be installed with the command 'pip install matplotlib'
+
+# the code is modified
 import matplotlib.pyplot as plt
 
 def readUint32(array, arrayIndex):
@@ -108,7 +110,7 @@ def ReadWaveformDataDemo():
 
     # Run controller for 1 second
     scommand.sendall(b'set runmode run')
-    time.sleep(2)
+    time.sleep(1)
     scommand.sendall(b'set runmode stop')
 
     # Read waveform data
@@ -131,22 +133,18 @@ def ReadWaveformDataDemo():
         if magicNumber != 0x3ae2710f:
             raise Exception('Error... magic number incorrect')
 
-        # Each block should contain 128 frames of data - process each
-        # of these one-by-one
-        #   for frame in range(128):
-            
+        #   skipping 5 bytes for channel name
+        rawIndex = rawIndex + 5   
+
         #    # Expect 4 bytes to be timestamp as int32.
-        #    rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
         print("raw index after extracting magic number \n", rawIndex)
         rawTimestamp = rawData[rawIndex : rawIndex+4]
         rawTimestamp = int.from_bytes(rawTimestamp, byteorder='little', signed=True)
         rawIndex = rawIndex+4
-
+        print(rawTimestamp)
         # Multiply by 'timestep' to convert timestamp to seconds
         amplifierTimestamps.append(rawTimestamp)
 
-        #   skipping 4 bytes for channel name
-        rawIndex = rawIndex + 5
 
         #    # Expect 2 bytes of wideband data.
         #    rawSample, rawIndex = readUint16(rawData, rawIndex)
@@ -164,7 +162,7 @@ def ReadWaveformDataDemo():
     # If using matplotlib to plot is not desired, the following plot lines can be removed.
     # Data is still accessible at this point in the amplifierTimestamps and amplifierData
     #print("\n",amplifierData,"\n")
-   # plt.plot(amplifierTimestamps, spikeIDarray)
+    plt.scatter(amplifierTimestamps, spikeIDarray)
     print("spike array", spikeIDarray,"\n")  
     print("amplifier Timestamps", amplifierTimestamps)
 
