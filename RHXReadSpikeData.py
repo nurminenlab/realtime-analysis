@@ -13,6 +13,7 @@
 
 from ctypes import sizeof
 import time, socket
+from tkinter import Variable
 
 # In order to plot the data, 'matplotlib' is required.
 # If plotting is not needed, calls to plt can be removed and the data
@@ -39,6 +40,13 @@ def readUint16(array, arrayIndex):
     variable = int.from_bytes(variableBytes, byteorder='little', signed=False)
     arrayIndex = arrayIndex + 1
     return variable, arrayIndex
+
+def readChar(array, arrayIndex):
+    variableBytes = array[arrayIndex : arrayIndex + 5]
+    variable = variableBytes.decode()
+    arrayIndex = arrayIndex + 5    
+    return variable,arrayIndex
+
 
 def ReadSpikeDataDemo():
 
@@ -125,6 +133,10 @@ def ReadSpikeDataDemo():
     rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
     spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
     spikeIDarray = []
+    channelIDarray = []
+    #get channel name 
+    channelName = rawData[4:9]
+    print(channelName.decode())
 
     for block in range(numBlocks):
         # Expect 4 bytes to be TCP Magic Number as uint32.
@@ -149,19 +161,17 @@ def ReadSpikeDataDemo():
 
         # append spikeID of every spike to the spikeIDarray list
         spikeIDarray.append(spikeID)
-
-            
     
     # If using matplotlib to plot is not desired, the following plot lines can be removed.
     # Data is still accessible at this point in the amplifierTimestamps and amplifierData
-    #print("\n",amplifierData,"\n")
-    plt.scatter(spikeTimestamp, spikeIDarray)
+
+    plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
     print("spike array", spikeIDarray,"\n")  
     print("amplifier Timestamps", spikeTimestamp)
 
-    plt.title('A-025 Amplifier Data')
+    plt.title('Spike Data')
     plt.xlabel('Time (ms)')
-    plt.ylabel('Spike ID')
+    plt.ylabel('Channel')
     plt.show()
 
 ReadSpikeDataDemo()
