@@ -99,8 +99,10 @@ def ReadSpikeDataDemo():
     time.sleep(0.1)
 
     # Send TCP commands to set up TCP Data Output Enabled for SPK
-    # band of channel A-010
+    # band of channel A-028
     scommand.sendall(b'set a-028.tcpdataoutputenabledspike true')
+    time.sleep(0.1)
+    scommand.sendall(b'set a-00.tcpdataoutputenabledspike true')
     time.sleep(0.1)
 
     # Calculations for accurate parsing
@@ -128,7 +130,7 @@ def ReadSpikeDataDemo():
     if len(rawData) % spikeBytesPerBlock != 0:
         raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
 
-    numBlocks = int(len(rawData) / spikeBytesPerBlock)
+    numBlocks = int((len(rawData) / spikeBytesPerBlock) /2)
 
     rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
     spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
