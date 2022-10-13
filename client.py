@@ -9,3 +9,6 @@ FORMAT = 'utf-8'
 
 clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientsocket.connect(ADDR)
+
+clientsocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clientsocket1.connect(ADDR)
