@@ -13,6 +13,7 @@ serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket needs a
 #now BIND the socket created above to the address
 serverSocket.bind(ADDR)
 
+
 def handle_client(conn,addr): # handle individual connection between client and the server (one client and one server)
     print("new connection ", addr, "connected")
     connected = True
@@ -23,8 +24,14 @@ def handle_client(conn,addr): # handle individual connection between client and 
             msg = conn.recv(msg_length).decode(FORMAT)
             if msg == DISCONNECT_MSG:
                 connected = False
+                print(addr, " client disconnected.... ",msg)
+                
         print(addr, " sent the message ",msg)
-    conn.close()    
+
+    conn.close()
+
+    
+
 
 def start(): # handle new connection , distribute where they need to go
     
