@@ -10,8 +10,8 @@ FORMAT = 'utf-8'
 clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientsocket.connect(ADDR)
 
-clientsocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientsocket1.connect(ADDR)
+#clientsocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#clientsocket1.connect(ADDR)
 
 def send(msg):
     message = msg.encode(FORMAT)
@@ -20,3 +20,5 @@ def send(msg):
     send_length +=b' '*(HEADER - len(send_length))
     clientsocket.send(send_length)
     clientsocket.send(message)
+
+send("<text><text><text><text><text><text><text><text><text>")
