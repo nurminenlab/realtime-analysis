@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import time
 HEADER = 64 # number to load the length of the message that we're gonna recieve
 DISCONNECT_MSG = "!"
 PORT = 5050
@@ -40,9 +40,9 @@ def start(): # handle new connection , distribute where they need to go
     while True: #infinite loop to continue to listen 
         conn,addr = serverSocket.accept()  # will wait for new connection to the server, 
                                      # when new connection occurs , we store the address(server, port)info and an object(conn) that will allow us to send an object
-        thread = threading.Thread(target = handle_client, args= (conn,addr))
-        thread.start()
+        thread1 = threading.Thread(target = handle_client, args= (conn,addr))
+        thread1.start()
         print("Active connections ", threading.activeCount())
-
+    
 print("server starting.......")
 start() 

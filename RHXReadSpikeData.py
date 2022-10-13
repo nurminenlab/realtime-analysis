@@ -48,7 +48,7 @@ def readChar(array, arrayIndex):
     return variable,arrayIndex
 
 
-def ReadSpikeDataDemo():
+def ReadSpikeDataDemo(channel):
 
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
@@ -100,10 +100,10 @@ def ReadSpikeDataDemo():
 
     # Send TCP commands to set up TCP Data Output Enabled for SPK
     # band of channel A-028
+    tcpSPKchannel = "set "+channel+".tcpdataoutputenabledspike true"
     scommand.sendall(b'set a-028.tcpdataoutputenabledspike true')
     time.sleep(0.1)
-    scommand.sendall(b'set a-00.tcpdataoutputenabledspike true')
-    time.sleep(0.1)
+
 
     # Calculations for accurate parsing
     # At 30 kHz with 1 channel, 1 second of wideband waveform data (including magic number, timestamps, and amplifier data) is 181,420 bytes
@@ -173,7 +173,7 @@ def ReadSpikeDataDemo():
 
     plt.title('Spike Data')
     plt.xlabel('Time (ms)')
-    plt.ylabel('Channel')
+    plt.ylabel(f'Channel {channel}')
     plt.show()
 
-ReadSpikeDataDemo()
+ReadSpikeDataDemo("a-028")
