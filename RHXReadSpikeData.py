@@ -101,7 +101,8 @@ def ReadSpikeDataDemo(channel):
     # Send TCP commands to set up TCP Data Output Enabled for SPK
     # band of channel A-028
     tcpSPKchannel = "set "+channel+".tcpdataoutputenabledspike true"
-    scommand.sendall(b'set a-028.tcpdataoutputenabledspike true')
+    tcpSPKchannel = tcpSPKchannel.encode("utf-8")
+    scommand.sendall(tcpSPKchannel)
     time.sleep(0.1)
 
 
@@ -174,6 +175,8 @@ def ReadSpikeDataDemo(channel):
     plt.title('Spike Data')
     plt.xlabel('Time (ms)')
     plt.ylabel(f'Channel {channel}')
-    plt.show()
+ 
 
 ReadSpikeDataDemo("a-028")
+ReadSpikeDataDemo("a-008")
+plt.show()
