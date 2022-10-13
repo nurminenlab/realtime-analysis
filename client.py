@@ -8,4 +8,4 @@ ADDR = (SERVER,PORT)
 FORMAT = 'utf-8'
 
 clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientsocket.connect()
+clientsocket.connect(ADDR)

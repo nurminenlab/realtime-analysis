@@ -18,10 +18,11 @@ def handle_client(conn,addr): # handle individual connection between client and 
     connected = True
     while connected:
         msg_length = conn.recv(HEADER).decode(FORMAT) # recv => gotta give the number num of bytes we want to recieve from the client 
-        msg_length = int(msg_length)
-        msg = conn.recv(msg_length).decode(FORMAT)
-        if msg == DISCONNECT_MSG:
-            connected = False
+        if msg_length:
+            msg_length = int(msg_length)
+            msg = conn.recv(msg_length).decode(FORMAT)
+            if msg == DISCONNECT_MSG:
+                connected = False
         print(addr, " sent the message ",msg)
     conn.close()    
 
