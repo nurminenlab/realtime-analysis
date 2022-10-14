@@ -11,6 +11,7 @@
 # Once these ports are opened, this script can be run to acquire ~1 second of wideband data from channel A-010,
 # which can then be plotted assuming "matplotlib" is installed
 
+from asyncio.windows_events import NULL
 from ctypes import sizeof
 import time, socket
 from tkinter import Variable
@@ -49,6 +50,7 @@ def readChar(array, arrayIndex):
 
 
 def ReadSpikeDataDemo(inputChannelArray):
+
 
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
@@ -101,10 +103,14 @@ def ReadSpikeDataDemo(inputChannelArray):
     # Send TCP commands to set up TCP Data Output Enabled for SPK
     # band of input channels
     tcpCommandSPKchannel = ""
+    channelDict = []
 
     for i in range(len(inputChannelArray)):
         tcpCommandSPKchannel = tcpCommandSPKchannel+"set "+inputChannelArray[i]+".tcpdataoutputenabledspike true;"
-
+        channelDict.append({
+                            'channelName': str(inputChannelArray[i]),
+                            'timestamp'  : []
+                            })    
     tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
     scommand.sendall(tcpCommandSPKchannel)
     time.sleep(0.1)
@@ -140,10 +146,11 @@ def ReadSpikeDataDemo(inputChannelArray):
     rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
     spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
     spikeIDarray = []
-    channelIDarray = []
-    #get channel name 
+    SPKchannelArray =[]
+
+    '''#get channel name when dealing with just one channel
     channelName = rawData[4:9]
-    print(channelName.decode())
+    print(channelName.decode()) '''
 
     for block in range(numBlocks):
         # Expect 4 bytes to be TCP Magic Number as uint32.
@@ -154,7 +161,12 @@ def ReadSpikeDataDemo(inputChannelArray):
             raise Exception('Error... magic number incorrect')
 
         #   skipping 5 bytes for channel name
-        rawIndex = rawIndex + 5   
+        #rawIndex = rawIndex + 5   
+        
+        #reading channel that has spike and appending it
+        SPKchannel, rawIndex =readChar(rawData,rawIndex)
+        if SPKchannel not in SPKchannelArray:
+            SPKchannelArray.append(SPKchannel) 
 
         # Expect 4 bytes to be timestamp as int32.
         rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
@@ -172,8 +184,11 @@ def ReadSpikeDataDemo(inputChannelArray):
     # If using matplotlib to plot is not desired, the following plot lines can be removed.
     # Data is still accessible at this point in the amplifierTimestamps and amplifierData
 
+    print(f'initial input spike dict {channelDict}')
+
+    print(f'channels with spike {SPKchannelArray}')
     plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
-    print("spike array", spikeIDarray,"\n")  
+    print(f'total number of spikes {len(spikeIDarray)}')  
     print("amplifier Timestamps", spikeTimestamp)
 
     plt.title('Spike Data')
@@ -182,5 +197,4 @@ def ReadSpikeDataDemo(inputChannelArray):
  
 
 ReadSpikeDataDemo(["a-000","a-001","a-002"])
-#ReadSpikeDataDemo("a-008")
 plt.show()
