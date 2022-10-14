@@ -100,7 +100,7 @@ def ReadSpikeDataDemo(channel):
 
     # Send TCP commands to set up TCP Data Output Enabled for SPK
     # band of channel A-028
-    tcpSPKchannel = "set "+channel+".tcpdataoutputenabledspike true"
+    tcpSPKchannel = "set "+channel[0]+".tcpdataoutputenabledspike true"+";set "+channel[1]+".tcpdataoutputenabledspike true"
     tcpSPKchannel = tcpSPKchannel.encode("utf-8")
     scommand.sendall(tcpSPKchannel)
     time.sleep(0.1)
@@ -131,7 +131,7 @@ def ReadSpikeDataDemo(channel):
     if len(rawData) % spikeBytesPerBlock != 0:
         raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
 
-    numBlocks = int((len(rawData) / spikeBytesPerBlock) /2)
+    numBlocks = int((len(rawData) / spikeBytesPerBlock))
 
     rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
     spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
@@ -177,6 +177,6 @@ def ReadSpikeDataDemo(channel):
     plt.ylabel(f'Channel {channel}')
  
 
-ReadSpikeDataDemo("a-028")
-ReadSpikeDataDemo("a-008")
+ReadSpikeDataDemo(["a-000","a-001"])
+#ReadSpikeDataDemo("a-008")
 plt.show()
