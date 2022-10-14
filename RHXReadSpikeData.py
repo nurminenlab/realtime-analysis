@@ -50,7 +50,7 @@ def readChar(array, arrayIndex):
 
 
 def ReadSpikeDataDemo(inputChannelArray):
-
+    channelDict = {channel:[] for channel in inputChannelArray}
 
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
@@ -103,14 +103,11 @@ def ReadSpikeDataDemo(inputChannelArray):
     # Send TCP commands to set up TCP Data Output Enabled for SPK
     # band of input channels
     tcpCommandSPKchannel = ""
-    channelDict = []
+
 
     for i in range(len(inputChannelArray)):
         tcpCommandSPKchannel = tcpCommandSPKchannel+"set "+inputChannelArray[i]+".tcpdataoutputenabledspike true;"
-        channelDict.append({
-                            'channelName': str(inputChannelArray[i]),
-                            'timestamp'  : []
-                            })    
+  
     tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
     scommand.sendall(tcpCommandSPKchannel)
     time.sleep(0.1)
@@ -171,6 +168,9 @@ def ReadSpikeDataDemo(inputChannelArray):
         # Expect 4 bytes to be timestamp as int32.
         rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
 
+        # appending timestamp to the associated channel in the channel dictionary
+        channelDict[SPKchannel].append(rawTimestamp)
+
         # append timestamp of every spike to the spikeTimestamp list
         spikeTimestamp.append(rawTimestamp)
 
@@ -179,22 +179,26 @@ def ReadSpikeDataDemo(inputChannelArray):
         spikeID, rawIndex = readUint16(rawData, rawIndex)    
 
         # append spikeID of every spike to the spikeIDarray list
-        spikeIDarray.append(spikeID)
+        spikeIDarray.append("1")
     
     # If using matplotlib to plot is not desired, the following plot lines can be removed.
     # Data is still accessible at this point in the amplifierTimestamps and amplifierData
 
-    print(f'initial input spike dict {channelDict}')
-
     print(f'channels with spike {SPKchannelArray}')
-    plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
     print(f'total number of spikes {len(spikeIDarray)}')  
     print("amplifier Timestamps", spikeTimestamp)
+    print(channelDict)
 
-    plt.title('Spike Data')
-    plt.xlabel('Time (ms)')
-    plt.ylabel(f'Channel {inputChannelArray}')
- 
+    #plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    fig.suptitle('Horizontally stacked subplots')
+    ax1.scatter(channelDict['A-000'], [ "1" if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ],marker="|")
+    
+    ax2.scatter(channelDict['A-001'], [ "1" if x in channelDict['A-001'] else NULL for x in range(len(channelDict['A-001'])) ],marker="|")  
+    ax3.scatter(channelDict['A-002'], [ "1" if x in channelDict['A-002'] else NULL for x in range(len(channelDict['A-002'])) ],marker="|")
+    ax4.scatter(channelDict['A-003'], [ "1" if x in channelDict['A-003'] else NULL for x in range(len(channelDict['A-003'])) ],marker="|")  
 
-ReadSpikeDataDemo(["a-000","a-001","a-002"])
-plt.show()
+#    plt.xlim((0,20000))
+    plt.show()
+
+ReadSpikeDataDemo(["A-000","A-001","A-002","A-003"])
