@@ -48,7 +48,7 @@ def readChar(array, arrayIndex):
     return variable,arrayIndex
 
 
-def ReadSpikeDataDemo(channel):
+def ReadSpikeDataDemo(inputChannelArray):
 
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
@@ -99,10 +99,14 @@ def ReadSpikeDataDemo(channel):
     time.sleep(0.1)
 
     # Send TCP commands to set up TCP Data Output Enabled for SPK
-    # band of channel A-028
-    tcpSPKchannel = "set "+channel[0]+".tcpdataoutputenabledspike true"+";set "+channel[1]+".tcpdataoutputenabledspike true"
-    tcpSPKchannel = tcpSPKchannel.encode("utf-8")
-    scommand.sendall(tcpSPKchannel)
+    # band of input channels
+    tcpCommandSPKchannel = ""
+
+    for i in range(len(inputChannelArray)):
+        tcpCommandSPKchannel = tcpCommandSPKchannel+"set "+inputChannelArray[i]+".tcpdataoutputenabledspike true;"
+
+    tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
+    scommand.sendall(tcpCommandSPKchannel)
     time.sleep(0.1)
 
 
@@ -174,9 +178,9 @@ def ReadSpikeDataDemo(channel):
 
     plt.title('Spike Data')
     plt.xlabel('Time (ms)')
-    plt.ylabel(f'Channel {channel}')
+    plt.ylabel(f'Channel {inputChannelArray}')
  
 
-ReadSpikeDataDemo(["a-000","a-001"])
+ReadSpikeDataDemo(["a-000","a-001","a-002"])
 #ReadSpikeDataDemo("a-008")
 plt.show()
