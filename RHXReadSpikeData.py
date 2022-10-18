@@ -15,6 +15,11 @@ from asyncio.windows_events import NULL
 from ctypes import sizeof
 import time, socket
 from tkinter import Variable
+import seaborn as sns
+import numpy as np
+
+
+
 
 # In order to plot the data, 'matplotlib' is required.
 # If plotting is not needed, calls to plt can be removed and the data
@@ -191,13 +196,18 @@ def ReadSpikeDataDemo(inputChannelArray):
     #plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
     fig.suptitle('SPIKE Data for channels ')
+    plt.figure(1)
     ax1.scatter(channelDict['A-000'], [ 2 if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ],marker="|")
     print([ 2 if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ])
     ax2.scatter(channelDict['A-001'], [ "1" if x in channelDict['A-001'] else NULL for x in range(len(channelDict['A-001'])) ],marker="|")  
     ax3.scatter(channelDict['A-002'], [ "1" if x in channelDict['A-002'] else NULL for x in range(len(channelDict['A-002'])) ],marker="|")
     ax4.scatter(channelDict['A-003'], [ "1" if x in channelDict['A-003'] else NULL for x in range(len(channelDict['A-003'])) ],marker="|")  
-
-    #plt.xlim((0,20000))
+    
+    plt.figure(2)
+    palette = sns.color_palette("dark:violet")
+    plt.bar(channelDict.keys(),[len(channelDict[key]) for key in channelDict.keys()],color=palette)
+    
     plt.show()
+
 
 ReadSpikeDataDemo(["A-000","A-001","A-002","A-003"])
