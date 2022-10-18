@@ -142,7 +142,7 @@ def ReadSpikeDataDemo(inputChannelArray):
 
     rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
     spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
-    spikeIDarray = []
+    spikeCount = 0
     SPKchannelArray =[]
 
     '''#get channel name when dealing with just one channel
@@ -174,31 +174,30 @@ def ReadSpikeDataDemo(inputChannelArray):
         # append timestamp of every spike to the spikeTimestamp list
         spikeTimestamp.append(rawTimestamp)
 
-        #    Expect 1 bytes of spike ID
-        #    rawSample, rawIndex = readUint16(rawData, rawIndex)
-        spikeID, rawIndex = readUint16(rawData, rawIndex)    
-
+        #    Expect 1 bytes of spike ID - it's always 1 hence skipping the next line and simply incrementing the rawIndex by 1
+        #   spikeID, rawIndex = readUint16(rawData, rawIndex)  
+        rawIndex = rawIndex + 1
         # append spikeID of every spike to the spikeIDarray list
-        spikeIDarray.append("1")
+        spikeCount = spikeCount + 1
     
     # If using matplotlib to plot is not desired, the following plot lines can be removed.
     # Data is still accessible at this point in the amplifierTimestamps and amplifierData
 
     print(f'channels with spike {SPKchannelArray}')
-    print(f'total number of spikes {len(spikeIDarray)}')  
+    print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
     print(channelDict)
 
     #plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-    fig.suptitle('Horizontally stacked subplots')
-    ax1.scatter(channelDict['A-000'], [ "1" if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ],marker="|")
-    
+    fig.suptitle('SPIKE Data for channels ')
+    ax1.scatter(channelDict['A-000'], [ 2 if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ],marker="|")
+    print([ 2 if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ])
     ax2.scatter(channelDict['A-001'], [ "1" if x in channelDict['A-001'] else NULL for x in range(len(channelDict['A-001'])) ],marker="|")  
     ax3.scatter(channelDict['A-002'], [ "1" if x in channelDict['A-002'] else NULL for x in range(len(channelDict['A-002'])) ],marker="|")
     ax4.scatter(channelDict['A-003'], [ "1" if x in channelDict['A-003'] else NULL for x in range(len(channelDict['A-003'])) ],marker="|")  
 
-#    plt.xlim((0,20000))
+    #plt.xlim((0,20000))
     plt.show()
 
 ReadSpikeDataDemo(["A-000","A-001","A-002","A-003"])
