@@ -11,7 +11,6 @@
 # Once these ports are opened, this script can be run to acquire ~1 second of wideband data from channel A-010,
 # which can then be plotted assuming "matplotlib" is installed
 
-from asyncio.windows_events import NULL
 from ctypes import sizeof
 import time, socket
 from tkinter import Variable
@@ -56,7 +55,13 @@ def readChar(array, arrayIndex):
 
 def ReadSpikeDataDemo(inputChannelArray):
     channelDict = {channel:[] for channel in inputChannelArray}
-
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    fig.suptitle('SPIKE Data for channels ')
+    ax1.scatter(channelDict['A-000'], [ 1 if x in channelDict['A-000'] else 1 for x in range(len(channelDict['A-000'])) ],marker="|")
+    ax2.scatter(channelDict['A-001'], [ 1 if x in channelDict['A-001'] else 1 for x in range(len(channelDict['A-001'])) ],marker="|")  
+    ax3.scatter(channelDict['A-002'], [ 1 if x in channelDict['A-002'] else 1 for x in range(len(channelDict['A-002'])) ],marker="|")
+    ax4.scatter(channelDict['A-003'], [ 1 if x in channelDict['A-003'] else 1 for x in range(len(channelDict['A-003'])) ],marker="|") 
+    plt.figure(1)
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
     COMMAND_BUFFER_SIZE = 1024 # Increase if many return commands are expected
@@ -194,19 +199,16 @@ def ReadSpikeDataDemo(inputChannelArray):
     print(channelDict)
 
     #plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-    fig.suptitle('SPIKE Data for channels ')
-    plt.figure(1)
-    ax1.scatter(channelDict['A-000'], [ 2 if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ],marker="|")
-    print([ 2 if x in channelDict['A-000'] else NULL for x in range(len(channelDict['A-000'])) ])
-    ax2.scatter(channelDict['A-001'], [ "1" if x in channelDict['A-001'] else NULL for x in range(len(channelDict['A-001'])) ],marker="|")  
-    ax3.scatter(channelDict['A-002'], [ "1" if x in channelDict['A-002'] else NULL for x in range(len(channelDict['A-002'])) ],marker="|")
-    ax4.scatter(channelDict['A-003'], [ "1" if x in channelDict['A-003'] else NULL for x in range(len(channelDict['A-003'])) ],marker="|")  
+
+    ax1.scatter(channelDict['A-000'], [ 1 if x in channelDict['A-000'] else 1 for x in range(len(channelDict['A-000'])) ],marker="|")
+    ax2.scatter(channelDict['A-001'], [ 1 if x in channelDict['A-001'] else 1 for x in range(len(channelDict['A-001'])) ],marker="|")  
+    ax3.scatter(channelDict['A-002'], [ 1 if x in channelDict['A-002'] else 1 for x in range(len(channelDict['A-002'])) ],marker="|")
+    ax4.scatter(channelDict['A-003'], [ 1 if x in channelDict['A-003'] else 1 for x in range(len(channelDict['A-003'])) ],marker="|")  
     
     plt.figure(2)
     palette = sns.color_palette("dark:violet")
     plt.bar(channelDict.keys(),[len(channelDict[key]) for key in channelDict.keys()],color=palette)
-    
+
     plt.show()
 
 
