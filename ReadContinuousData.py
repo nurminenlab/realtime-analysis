@@ -77,7 +77,7 @@ def animate(x):
     print(f'individual time stamp {rawTimestamp}')
     print(f'time stamp array {x_timeStampArr}')
     plt.cla()
-    plt.scatter(x_timeStampArr,y_vals,marker='|')
+    plt.scatter(x_timeStampArr,y_vals,marker="|")
 
 
 anim = FuncAnimation(plt.gcf(), animate, interval = 1)
