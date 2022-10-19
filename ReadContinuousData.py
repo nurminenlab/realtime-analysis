@@ -1,8 +1,8 @@
 import time, socket
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-
-plt.style.use('fivethirtyeight')
+import math
+# plt.style.use('fivethirtyeight')
 
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
@@ -70,8 +70,13 @@ def animate(x):
     SPKchannel, rawIndex =readChar(rawData,rawIndex)
 
     rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
-    
+    rawTimestamp = round(rawTimestamp/20)
     x_timeStampArr.append(rawTimestamp)
+
+    '''   get first digit of number 
+    digits = (int)(math.log10(rawTimestamp))
+    n = (int)(rawTimestamp / pow(10, digits))  '''
+    
     y_vals.append(1)
 
     print(f'individual time stamp {rawTimestamp}')
