@@ -144,7 +144,7 @@ def ReadSpikeDataDemo(inputChannelArray):
 
     # Read waveform data
     rawData = swaveform.recv(WAVEFORM_BUFFER_SIZE)
-
+    rawData = b'\x0fq\xe2:A-001p<\x00\x00\x01'
     if len(rawData) % spikeBytesPerBlock != 0:
         raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
 
