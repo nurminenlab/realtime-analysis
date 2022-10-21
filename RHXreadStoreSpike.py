@@ -147,9 +147,15 @@ time.sleep(0.1)
 scommand.sendall(b'execute clearalldataoutputs')
 time.sleep(0.1)
 
-for i in range(10):
+#scommand.sendall(b'set runmode run')
+
+while True:
+    # wait for stimulus computer to tell when stimuli is on the screen
+
+    # start collecting spikes from Intan
     channelDict = SpikeDataPerTrial(["A-000","A-001","A-002","A-003"])
 
+    # update plot using the code snippets below
 
 '''# open plots
 plt.figure(1)
