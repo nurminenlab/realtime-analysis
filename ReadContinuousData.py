@@ -85,7 +85,7 @@ def animate(x):
     plt.scatter(x_timeStampArr,y_vals,marker="|")
 
 
-anim = FuncAnimation(plt.gcf(), animate, interval = 1)
+anim = FuncAnimation(plt.gcf(), animate)
 plt.tight_layout()
 plt.show()
 

@@ -55,9 +55,7 @@ def readChar(array, arrayIndex):
 
 def ReadSpikeDataDemo(inputChannelArray):
     channelDict = {channel:[] for channel in inputChannelArray}
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-    fig.suptitle('SPIKE Data for channels ')
-    plt.figure(1)
+
     # Declare buffer size for reading from TCP command socket
     # This is the maximum number of bytes expected for 1 read. 1024 is plenty for a single text command
     COMMAND_BUFFER_SIZE = 1024 # Increase if many return commands are expected
@@ -195,7 +193,9 @@ def ReadSpikeDataDemo(inputChannelArray):
     print(channelDict)
 
     #plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
-
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    fig.suptitle('SPIKE Data for channels ')
+    plt.figure(1)
     ax1.scatter(channelDict['A-000'], [ 1 if x in channelDict['A-000'] else 1 for x in range(len(channelDict['A-000'])) ],marker="|")
     ax2.scatter(channelDict['A-001'], [ 1 if x in channelDict['A-001'] else 1 for x in range(len(channelDict['A-001'])) ],marker="|")  
     ax3.scatter(channelDict['A-002'], [ 1 if x in channelDict['A-002'] else 1 for x in range(len(channelDict['A-002'])) ],marker="|")
