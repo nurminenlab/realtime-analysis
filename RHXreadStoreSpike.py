@@ -143,7 +143,6 @@ fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 fig.suptitle('SPIKE Data for channels ')
 
 userIPchannels = ["A-000","A-001","A-002","A-003"]
-
 plotGraph(SpikeDataPerTrial(userIPchannels),1)
 
 plotGraph(SpikeDataPerTrial(userIPchannels),2)
@@ -153,7 +152,9 @@ plotGraph(SpikeDataPerTrial(userIPchannels),3)
 plotGraph(SpikeDataPerTrial(userIPchannels),4)
 
 
+
 plt.show()
+
 
 
 
