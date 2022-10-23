@@ -34,6 +34,7 @@ def readChar(array, arrayIndex):
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
 
+
 def SpikeDataPerTrial(inputChannelArray):
     channelDict = {channel:[] for channel in inputChannelArray}
 
@@ -57,7 +58,6 @@ def SpikeDataPerTrial(inputChannelArray):
 
     spikeBytesPerBlock = 14
 
-
     if len(rawData) % spikeBytesPerBlock != 0:
         raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
 
@@ -68,7 +68,7 @@ def SpikeDataPerTrial(inputChannelArray):
     spikeCount = 0
     SPKchannelArray =[]
 
-    '''#get channel name when dealing with just one channel
+    '''get channel name when dealing with just one channel
     channelName = rawData[4:9]
     print(channelName.decode()) '''
 
@@ -78,10 +78,7 @@ def SpikeDataPerTrial(inputChannelArray):
         magicNumber, rawIndex = readUint32(rawData, rawIndex)
     
         if magicNumber != 0x3ae2710f:
-            raise Exception('Error... magic number incorrect')
-
-        #   skipping 5 bytes for channel name
-        #rawIndex = rawIndex + 5   
+            raise Exception('Error... magic number incorrect')  
         
         #reading channel that has spike and appending it
         SPKchannel, rawIndex =readChar(rawData,rawIndex)
@@ -103,33 +100,28 @@ def SpikeDataPerTrial(inputChannelArray):
         # append spikeID of every spike to the spikeIDarray list
         spikeCount = spikeCount + 1
     
-    # If using matplotlib to plot is not desired, the following plot lines can be removed.
-    # Data is still accessible at this point in the amplifierTimestamps and amplifierData
 
     print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
     print(channelDict)
 
-    #plt.scatter(spikeTimestamp, spikeIDarray,marker="|")
+
     return channelDict
 
+def plotGraph(channelDict,trialCount):
 
-def plotGraph(i):
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-    fig.suptitle('SPIKE Data for channels ')
-    plt.figure(1)
-    ax1.scatter(channelDict['A-000'], [ i if x in channelDict['A-000'] else 1 for x in range(len(channelDict['A-000'])) ],marker="|")
-    ax2.scatter(channelDict['A-001'], [ i if x in channelDict['A-001'] else 1 for x in range(len(channelDict['A-001'])) ],marker="|")  
-    ax3.scatter(channelDict['A-002'], [ i if x in channelDict['A-002'] else 1 for x in range(len(channelDict['A-002'])) ],marker="|")
-    ax4.scatter(channelDict['A-003'], [ i if x in channelDict['A-003'] else 1 for x in range(len(channelDict['A-003'])) ],marker="|")  
-    
-    '''plt.figure(2)
+    ax1.scatter(channelDict['A-000'], [None if len(channelDict['A-000'])==0 else trialCount for x in range(len(channelDict['A-000']))],marker="|")
+    ax2.scatter(channelDict['A-001'], [None if len(channelDict['A-001'])==0 else trialCount for x in range(len(channelDict['A-001']))],marker="|")  
+    ax3.scatter(channelDict['A-002'], [None if len(channelDict['A-002'])==0 else trialCount for x in range(len(channelDict['A-002']))],marker="|")
+    ax4.scatter(channelDict['A-003'], [None if len(channelDict['A-003'])==0 else trialCount for x in range(len(channelDict['A-003']))],marker="|")  
+
+'''plt.figure(2)
     palette = sns.color_palette("dark:violet")
     plt.bar(channelDict.keys(),[len(channelDict[key]) for key in channelDict.keys()],color=palette)
-    '''
+'''
    
-print("trial 1")
+
 print('Connecting to TCP command server...')
 scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 scommand.connect(('127.0.0.1', 5000))
@@ -147,6 +139,25 @@ time.sleep(0.1)
 scommand.sendall(b'execute clearalldataoutputs')
 time.sleep(0.1)
 
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+fig.suptitle('SPIKE Data for channels ')
+
+plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),1)
+
+plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),2)
+
+plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),3)
+
+plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),4)
+
+plt.show()
+
+
+
+
+
+
+'''
 #scommand.sendall(b'set runmode run')
 
 while True:
@@ -157,7 +168,7 @@ while True:
 
     # update plot using the code snippets below
 
-'''# open plots
+# open plots
 plt.figure(1)
 indx = 0
 while not stopped:
@@ -167,8 +178,5 @@ while not stopped:
     increment 
     update handle        
 
+
 '''
-
-#plt.show()
-#plt.show()
-
