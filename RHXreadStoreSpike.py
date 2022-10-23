@@ -106,8 +106,8 @@ def SpikeDataPerTrial(inputChannelArray):
     print("amplifier Timestamps", spikeTimestamp)
     print(channelDict)
 
-
     return channelDict
+
 
 def plotGraph(channelDict,trialCount):
 
@@ -142,13 +142,16 @@ time.sleep(0.1)
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 fig.suptitle('SPIKE Data for channels ')
 
-plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),1)
+userIPchannels = ["A-000","A-001","A-002","A-003"]
 
-plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),2)
+plotGraph(SpikeDataPerTrial(userIPchannels),1)
 
-plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),3)
+plotGraph(SpikeDataPerTrial(userIPchannels),2)
 
-plotGraph(SpikeDataPerTrial(["A-000","A-001","A-002","A-003"]),4)
+plotGraph(SpikeDataPerTrial(userIPchannels),3)
+
+plotGraph(SpikeDataPerTrial(userIPchannels),4)
+
 
 plt.show()
 
