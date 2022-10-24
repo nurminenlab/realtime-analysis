@@ -167,20 +167,19 @@ x2,y2 = [],[]
 x3,y3 = [],[]
 x4,y4 = [],[]
 
-sc1 = ax1.scatter(x1,y1)
+sc1 = ax1.scatter(x1,y1,marker='|')
 plt.setp(ax1, xlim=(0,800), ylim=(0,5))
 
-sc2 = ax2.scatter(x2,y2)
+sc2 = ax2.scatter(x2,y2,marker='|')
 plt.setp(ax2, xlim=(0,800), ylim=(0,5))
 
-sc3 = ax3.scatter(x3,y3)
+sc3 = ax3.scatter(x3,y3,marker='|')
 plt.setp(ax3, xlim=(0,800), ylim=(0,5))
 
-sc4 = ax4.scatter(x4,y4)
+sc4 = ax4.scatter(x4,y4,marker='|')
 plt.setp(ax4, xlim=(0,800), ylim=(0,5))
 
-plt.xlim(0,800)
-plt.ylim(0,5)
+
 fig.suptitle('SPIKE Data for channels ')
 
 
