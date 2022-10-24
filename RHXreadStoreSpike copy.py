@@ -111,20 +111,21 @@ def SpikeDataPerTrial(inputChannelArray):
 
 def plotGraph(channelDict,trialCount):
 
-    x0.append(channelDict['A-000'])
-    y0.append(None if len(channelDict['A-000'])==0 else trialCount for x in range(len(channelDict['A-000'])))
+
+    x0.extend(channelDict['A-000'])
+    y0.extend([None if len(channelDict['A-000'])==0 else trialCount for x in range(len(channelDict['A-000']))])
     sc0.set_offsets(np.c_[x0,y0])
 
-    x1.append(channelDict['A-001'])
-    y1.append(None if len(channelDict['A-001'])==0 else trialCount for x in range(len(channelDict['A-001'])))
+    x1.extend(channelDict['A-001'])
+    y1.extend([None if len(channelDict['A-001'])==0 else trialCount for x in range(len(channelDict['A-001']))])
     sc1.set_offsets(np.c_[x1,y1])
 
-    x2.append(channelDict['A-002'])
-    y2.append(None if len(channelDict['A-002'])==0 else trialCount for x in range(len(channelDict['A-002'])))
+    x2.extend(channelDict['A-002'])
+    y2.extend([None if len(channelDict['A-002'])==0 else trialCount for x in range(len(channelDict['A-002']))])
     sc2.set_offsets(np.c_[x2,y2])
 
-    x3.append(channelDict['A-003'])
-    y3.append(None if len(channelDict['A-003'])==0 else trialCount for x in range(len(channelDict['A-003'])))
+    x3.extend(channelDict['A-003'])
+    y3.extend([None if len(channelDict['A-003'])==0 else trialCount for x in range(len(channelDict['A-003']))])
     sc3.set_offsets(np.c_[x3,y3])
 
     fig.canvas.draw()
@@ -165,15 +166,15 @@ sc0 = ax1.scatter(x0,y0)
 sc1 = ax1.scatter(x1,y1)
 sc2 = ax1.scatter(x2,y2)
 sc3 = ax1.scatter(x3,y3)
-
-
+plt.xlim(0,800)
+plt.ylim(0,5)
 fig.suptitle('SPIKE Data for channels ')
 plt.draw()
 
 
 
 userIPchannels = ["A-000","A-001","A-002","A-003"]
-plotGraph(SpikeDataPerTrial(userIPchannels),1)
+plotGraph(SpikeDataPerTrial(userIPchannels),1,)
 
 plotGraph(SpikeDataPerTrial(userIPchannels),2)
 
@@ -186,7 +187,7 @@ plotGraph(SpikeDataPerTrial(userIPchannels),4)
 
 
 
-
+# Lauri Pseudo codes
 '''
 #scommand.sendall(b'set runmode run')
 
