@@ -17,13 +17,13 @@ sc1 = ax1.scatter(x,y,marker='|')
 plt.setp(ax1, xlim=(0,20), ylim=(0,20))
 
 sc2 = ax2.scatter(x1,y1,marker='x')
-plt.setp(ax2, xlim=(0,21), ylim=(0,21))
+plt.setp(ax2, xlim=(0,21), ylim=(0,25))
 
 sc3 = ax3.scatter(x,y,c = 'purple')
-plt.setp(ax3, xlim=(0,22), ylim=(0,22))
+plt.setp(ax3, xlim=(0,22), ylim=(0,30))
 
 sc4 = ax4.scatter(x1,y1,c = 'black')
-plt.setp(ax4, xlim=(0,23), ylim=(0,23))
+plt.setp(ax4, xlim=(0,23), ylim=(0,35))
 
 
 
@@ -33,27 +33,21 @@ def updatePlot():
         x.append(np.random.rand(1)*15)
         y.append(np.random.rand(1)*15)
         sc1.set_offsets(np.c_[x,y])
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        time.sleep(0.1)
+        
 
         x1.append(np.random.rand(1)*15)
         y1.append(np.random.rand(1)*15)
         sc2.set_offsets(np.c_[x1,y1])
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        time.sleep(0.1)
-
+        
         x.append(np.random.rand(1)*15)
         y.append(np.random.rand(1)*15)
         sc3.set_offsets(np.c_[x,y])
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        time.sleep(0.1)
+        
 
         x1.append(np.random.rand(1)*18)
         y1.append(np.random.rand(1)*13)
         sc4.set_offsets(np.c_[x,y])
+
         fig.canvas.draw()
         fig.canvas.flush_events()
         time.sleep(0.1)
