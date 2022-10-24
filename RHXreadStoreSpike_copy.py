@@ -40,12 +40,12 @@ def SpikeDataPerTrial(inputChannelArray):
 
     
     for i in range(len(inputChannelArray)):
-        time.sleep(0.1)
+        #time.sleep(0.1)
         tcpCommandSPKchannel ="set "+inputChannelArray[i]+".tcpdataoutputenabledspike true;" 
         tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
         scommand.sendall(tcpCommandSPKchannel)
 
-    time.sleep(0.1)
+    #time.sleep(0.1)
 
     scommand.sendall(b'set runmode run')
     time.sleep(0.5) # run for 500ms - 0.5s
@@ -55,7 +55,7 @@ def SpikeDataPerTrial(inputChannelArray):
     
     scommand.sendall(b'set runmode stop')
     time.sleep(0.1)
-
+    
     spikeBytesPerBlock = 14
 
     if len(rawData) % spikeBytesPerBlock != 0:
@@ -179,8 +179,7 @@ plt.setp(ax3, xlim=(0,800), ylim=(0,5))
 sc4 = ax4.scatter(x4,y4,marker='|')
 plt.setp(ax4, xlim=(0,800), ylim=(0,5))
 
-plt.xlim(0,800)
-plt.ylim(0,5)
+
 fig.suptitle('SPIKE Data for channels ')
 
 
@@ -198,6 +197,7 @@ while stimulusComp_Inp:
     #plotGraph(SpikeDataPerTrial(userIPchannels),4)
 
     user_input = input("Enter 'q' to quit: ")
+
     if user_input == 'q':
         break
 
