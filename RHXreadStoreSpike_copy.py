@@ -113,19 +113,19 @@ def plotGraph(channelDict,trialCount):
 
     x1.extend(channelDict['A-001'])
     y1.extend([None if len(channelDict['A-001'])==0 else trialCount for x in range(len(channelDict['A-001']))])
-    sc1.set_offsets(np.c_[x1,y1])
+    sc[0].set_offsets(np.c_[x1,y1])
 
     x2.extend(channelDict['A-002'])
     y2.extend([None if len(channelDict['A-002'])==0 else trialCount for x in range(len(channelDict['A-002']))])
-    sc2.set_offsets(np.c_[x2,y2])
+    sc[1].set_offsets(np.c_[x2,y2])
 
     x3.extend(channelDict['A-003'])
     y3.extend([None if len(channelDict['A-003'])==0 else trialCount for x in range(len(channelDict['A-003']))])
-    sc3.set_offsets(np.c_[x3,y3])
+    sc[2].set_offsets(np.c_[x3,y3])
 
     x4.extend(channelDict['A-004'])
     y4.extend([None if len(channelDict['A-004'])==0 else trialCount for x in range(len(channelDict['A-004']))])
-    sc4.set_offsets(np.c_[x4,y4])
+    sc[3].set_offsets(np.c_[x4,y4])
 
     fig.canvas.draw()
     fig.canvas.flush_events()
@@ -156,18 +156,24 @@ scommand.sendall(b'execute clearalldataoutputs')
 time.sleep(0.1)
 
 plt.ion()
-fig = plt.figure()
-ax1 = fig.add_subplot(2,2,1)
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+
+'''ax1 = fig.add_subplot(2,2,1)
 ax2 = fig.add_subplot(2,2,2)
 ax3 = fig.add_subplot(2,2,3)
-ax4 = fig.add_subplot(2,2,4)
-
+ax4 = fig.add_subplot(2,2,4)'''
+axes = [ax1,ax2,ax3,ax4] 
 x1,y1 = [],[]
 x2,y2 = [],[]
 x3,y3 = [],[]
 x4,y4 = [],[]
 
-sc1 = ax1.scatter(x1,y1,marker='|')
+sc = []
+for axis,i in zip(axes,range(len(axes))):
+    sc.append(axis.scatter(x1,y1,marker='|'))
+    plt.setp(axis, xlim=(0,800), ylim=(0,5))
+
+'''sc1 = ax1.scatter(x1,y1,marker='|')
 plt.setp(ax1, xlim=(0,800), ylim=(0,5))
 
 sc2 = ax2.scatter(x2,y2,marker='|')
@@ -177,7 +183,7 @@ sc3 = ax3.scatter(x3,y3,marker='|')
 plt.setp(ax3, xlim=(0,800), ylim=(0,5))
 
 sc4 = ax4.scatter(x4,y4,marker='|')
-plt.setp(ax4, xlim=(0,800), ylim=(0,5))
+plt.setp(ax4, xlim=(0,800), ylim=(0,5))'''
 
 
 fig.suptitle('SPIKE Data for channels ')
@@ -188,13 +194,16 @@ userIPchannels = ["A-001","A-002","A-003","A-004"]
 
 stimulusComp_Inp = True
 while stimulusComp_Inp:
+    
+    # get stimulus ID from stimulus PC 
+    
     plotGraph(SpikeDataPerTrial(userIPchannels),1)
 
-    #plotGraph(SpikeDataPerTrial(userIPchannels),2)
+    plotGraph(SpikeDataPerTrial(userIPchannels),2)
 
-    #plotGraph(SpikeDataPerTrial(userIPchannels),3)
+    plotGraph(SpikeDataPerTrial(userIPchannels),3)
 
-    #plotGraph(SpikeDataPerTrial(userIPchannels),4)
+    plotGraph(SpikeDataPerTrial(userIPchannels),4)
 
     user_input = input("Enter 'q' to quit: ")
 
