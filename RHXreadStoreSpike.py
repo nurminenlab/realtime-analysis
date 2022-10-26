@@ -111,20 +111,20 @@ def SpikeDataPerTrial(inputChannelArray):
 
 def plotGraph(channelDict,trialCount):
 
-    x1.extend(channelDict['A-001'])
-    y1.extend([None if len(channelDict['A-001'])==0 else trialCount for x in range(len(channelDict['A-001']))])
+    x1.extend(channelDict[userIPchannels[0]])
+    y1.extend([None if len(channelDict[userIPchannels[0]])==0 else trialCount for x in range(len(channelDict[userIPchannels[0]]))])
     sc[0].set_offsets(np.c_[x1,y1])
 
-    x2.extend(channelDict['A-002'])
-    y2.extend([None if len(channelDict['A-002'])==0 else trialCount for x in range(len(channelDict['A-002']))])
+    x2.extend(channelDict[userIPchannels[1]])
+    y2.extend([None if len(channelDict[userIPchannels[1]])==0 else trialCount for x in range(len(channelDict[userIPchannels[1]]))])
     sc[1].set_offsets(np.c_[x2,y2])
 
-    x3.extend(channelDict['A-003'])
-    y3.extend([None if len(channelDict['A-003'])==0 else trialCount for x in range(len(channelDict['A-003']))])
+    x3.extend(channelDict[userIPchannels[2]])
+    y3.extend([None if len(channelDict[userIPchannels[2]])==0 else trialCount for x in range(len(channelDict[userIPchannels[2]]))])
     sc[2].set_offsets(np.c_[x3,y3])
 
-    x4.extend(channelDict['A-004'])
-    y4.extend([None if len(channelDict['A-004'])==0 else trialCount for x in range(len(channelDict['A-004']))])
+    x4.extend(channelDict[userIPchannels[3]])
+    y4.extend([None if len(channelDict[userIPchannels[3]])==0 else trialCount for x in range(len(channelDict[userIPchannels[3]]))])
     sc[3].set_offsets(np.c_[x4,y4])
 
     fig.canvas.draw()
@@ -171,7 +171,7 @@ x4,y4 = [],[]
 sc = []
 for axis,i in zip(axes,range(len(axes))):
     sc.append(axis.scatter(x1,y1,marker='|'))
-    plt.setp(axis, xlim=(0,800), ylim=(0,5))
+    plt.setp(axis, xlim=(0,550), ylim=(0,5))
 
 fig.suptitle('SPIKE Data for channels ')
 
@@ -190,6 +190,8 @@ while stimulusComp_Inp:
 
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
+        #print(channelD)
+        fig.savefig('plot.png')
         break
 
 
