@@ -51,7 +51,7 @@ def SpikeDataPerTrial(inputChannelArray):
     time.sleep(0.5) # run for 500ms - 0.5s
 
     rawData = sSPK.recv(200000)
-    print(rawData)
+    #print(rawData)
     
     scommand.sendall(b'set runmode stop')
     time.sleep(0.1)
@@ -101,10 +101,10 @@ def SpikeDataPerTrial(inputChannelArray):
         spikeCount = spikeCount + 1
     
 
-    print(f'channels with spike {SPKchannelArray}')
+    '''print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
-    print(channelDict)
+    print(channelDict)'''
 
     return channelDict
 
@@ -155,6 +155,8 @@ time.sleep(0.1)
 scommand.sendall(b'execute clearalldataoutputs')
 time.sleep(0.1)
 
+totTimeStamps = []
+
 plt.ion()
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
@@ -180,17 +182,25 @@ userIPchannels = ["A-001","A-002","A-003","A-004"]
 stimulusComp_Inp = True
 while stimulusComp_Inp:
     
-    plotGraph(SpikeDataPerTrial(userIPchannels),1,)
+    channelDict = SpikeDataPerTrial(userIPchannels)
+    totTimeStamps.append(channelDict)
+    plotGraph(channelDict,1)
 
-    plotGraph(SpikeDataPerTrial(userIPchannels),2)
+    channelDict = SpikeDataPerTrial(userIPchannels)
+    totTimeStamps.append(channelDict)
+    plotGraph(channelDict,2)
 
-    plotGraph(SpikeDataPerTrial(userIPchannels),3)
+    channelDict = SpikeDataPerTrial(userIPchannels)
+    totTimeStamps.append(channelDict)
+    plotGraph(channelDict,3)
 
-    plotGraph(SpikeDataPerTrial(userIPchannels),4)
+    channelDict = SpikeDataPerTrial(userIPchannels)
+    totTimeStamps.append(channelDict)
+    plotGraph(channelDict,4)
 
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-        #print(channelD)
+        print(totTimeStamps)
         fig.savefig('plot.png')
         break
 
