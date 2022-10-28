@@ -8,7 +8,7 @@ from ctypes import sizeof
 from tkinter import Variable
 import seaborn as sns
 import numpy as np
-
+from collections import defaultdict
 
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
@@ -129,14 +129,7 @@ def plotGraph(channelDict,trialCount):
 
     fig.canvas.draw()
     fig.canvas.flush_events()
-    time.sleep(0.1)
-
-
-'''plt.figure(2)
-    palette = sns.color_palette("dark:violet")
-    plt.bar(channelDict.keys(),[len(channelDict[key]) for key in channelDict.keys()],color=palette)
-'''
-   
+    time.sleep(0.1)  
 
 print('Connecting to TCP command server...')
 scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -155,7 +148,7 @@ time.sleep(0.1)
 scommand.sendall(b'execute clearalldataoutputs')
 time.sleep(0.1)
 
-totTimeStamps = []
+totTimeStampsList = []
 
 plt.ion()
 
@@ -172,7 +165,7 @@ x4,y4 = [],[]
 
 sc = []
 for axis,i in zip(axes,range(len(axes))):
-    sc.append(axis.scatter(x1,y1,marker='|'))
+    sc.append(axis.scatter([],[],marker='|'))
     plt.setp(axis, xlim=(0,550), ylim=(0,5))
 
 fig.suptitle('SPIKE Data for channels ')
@@ -183,24 +176,35 @@ stimulusComp_Inp = True
 while stimulusComp_Inp:
     
     channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStamps.append(channelDict)
+    totTimeStampsList.append(channelDict)
     plotGraph(channelDict,1)
 
     channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStamps.append(channelDict)
+    totTimeStampsList.append(channelDict)
     plotGraph(channelDict,2)
 
     channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStamps.append(channelDict)
+    totTimeStampsList.append(channelDict)
     plotGraph(channelDict,3)
 
     channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStamps.append(channelDict)
+    totTimeStampsList.append(channelDict)
     plotGraph(channelDict,4)
+
+    totTimeStamps = defaultdict(list)
+
+    for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
+        for key, value in eachtrial.items():
+            totTimeStamps[key].extend(value)
+    
+    plt.figure(2)
+    palette = sns.color_palette("dark:violet")
+    plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
+
 
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-        print(totTimeStamps)
+        
         fig.savefig('plot.png')
         break
 
