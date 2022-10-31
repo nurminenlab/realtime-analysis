@@ -167,8 +167,11 @@ sc = []
 for axis,i in zip(axes,range(len(axes))):
     sc.append(axis.scatter([],[],marker='|'))
     plt.setp(axis, xlim=(0,550), ylim=(0,5))
+fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
+fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
 fig.suptitle('SPIKE Data for channels ')
+plt.ylabel("Trials")
 
 userIPchannels = ["A-001","A-002","A-003","A-004"]
 
@@ -200,6 +203,8 @@ while stimulusComp_Inp:
     plt.figure(2)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
+    plt.title("no. of spikes vs Channel")
+    plt.ylabel("count(SPK)")
 
 
     user_input = input("Enter 'q' to quit: ")
