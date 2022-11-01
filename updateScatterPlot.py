@@ -4,6 +4,73 @@ import time
 import matplotlib.pyplot as plt
 
 plt.ion()
+
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+
+axes = [ax1,ax2,ax3,ax4] 
+sc = []
+for axis,i in zip(axes,range(len(axes))):
+    sc.append(axis.scatter([],[],marker='|'))
+    plt.setp(axis, xlim=(0,35), ylim=(0,35))
+x, y = [],[]
+x1,y1 =[],[]
+xyArr = [([],[]),([],[]),([],[]),([],[])]
+
+plt.draw()
+def updatePlot():
+    for i,xy in zip(range(4),xyArr):
+        xy[0].append(np.random.rand(1)*15)
+        xy[1].append(np.random.rand(1)*15)
+        sc[i].set_offsets(np.c_[xy[0],xy[1]])
+        
+
+        '''x1.append(np.random.rand(1)*15)
+        y1.append(np.random.rand(1)*15)
+        sc[1].set_offsets(np.c_[x1,y1])
+        
+        x.append(np.random.rand(1)*15)
+        y.append(np.random.rand(1)*15)
+        sc[2].set_offsets(np.c_[x,y])
+        
+
+        x1.append(np.random.rand(1)*18)
+        y1.append(np.random.rand(1)*13)
+        sc[3].set_offsets(np.c_[x,y])'''
+
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        time.sleep(0.1)
+
+
+while True:
+    user_input = input("Enter 'u' to update plot or 'q' to quit: ")
+    if user_input == "q":
+        print(xyArr)
+        break
+    if user_input =="u":
+        updatePlot()
+
+'''arr = []
+
+arr = [([1],[2]),([3],[4]),([5],[6])]
+arr.append(([7],[8]))
+for x in arr:
+  print(x[0],x[1])
+
+print(arr)
+'''
+
+
+
+
+
+
+'''import random 
+import numpy as np
+import time
+import matplotlib.pyplot as plt
+
+plt.ion()
 fig = plt.figure()
 ax1 = fig.add_subplot(2,2,1)
 ax2 = fig.add_subplot(2,2,2)
@@ -60,3 +127,4 @@ while True:
     if user_input =="u":
         updatePlot()
 
+'''

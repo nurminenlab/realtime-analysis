@@ -110,27 +110,16 @@ def SpikeDataPerTrial(inputChannelArray):
 
 
 def plotGraph(channelDict,trialCount):
+    for i,xy in zip(range(4),xyArr):
+        xy[0].extend(channelDict[userIPchannels[i]])
+        xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else trialCount for x in range(len(channelDict[userIPchannels[i]]))])
+        sc[i].set_offsets(np.c_[xy[0],xy[1]])
 
-    x1.extend(channelDict[userIPchannels[0]])
-    y1.extend([None if len(channelDict[userIPchannels[0]])==0 else trialCount for x in range(len(channelDict[userIPchannels[0]]))])
-    sc[0].set_offsets(np.c_[x1,y1])
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        time.sleep(0.1)  
 
-    x2.extend(channelDict[userIPchannels[1]])
-    y2.extend([None if len(channelDict[userIPchannels[1]])==0 else trialCount for x in range(len(channelDict[userIPchannels[1]]))])
-    sc[1].set_offsets(np.c_[x2,y2])
-
-    x3.extend(channelDict[userIPchannels[2]])
-    y3.extend([None if len(channelDict[userIPchannels[2]])==0 else trialCount for x in range(len(channelDict[userIPchannels[2]]))])
-    sc[2].set_offsets(np.c_[x3,y3])
-
-    x4.extend(channelDict[userIPchannels[3]])
-    y4.extend([None if len(channelDict[userIPchannels[3]])==0 else trialCount for x in range(len(channelDict[userIPchannels[3]]))])
-    sc[3].set_offsets(np.c_[x4,y4])
-
-    fig.canvas.draw()
-    fig.canvas.flush_events()
-    time.sleep(0.1)  
-
+# TCP connection
 print('Connecting to TCP command server...')
 scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 scommand.connect(('127.0.0.1', 5000))
@@ -148,51 +137,39 @@ time.sleep(0.1)
 scommand.sendall(b'execute clearalldataoutputs')
 time.sleep(0.1)
 
-totTimeStampsList = []
-
-plt.ion()
+print("opening plot......")
+# setting up plot 
+plt.ion() # Enable interactive mode for plot
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-
 axes = [ax1,ax2,ax3,ax4] 
 # lauri : customize subplot according to channels 
 # fig, axes = plt.subplots(nX,nY)
 
-x1,y1 = [],[]
-x2,y2 = [],[]
-x3,y3 = [],[]
-x4,y4 = [],[]
-
-sc = []
+xyArr = [([],[]),([],[]),([],[]),([],[])] #for 4 channels (if > 4 Channels , append ([],[]) - note: it should be a tuple)
+sc = [] # scatter plot list
 for axis,i in zip(axes,range(len(axes))):
     sc.append(axis.scatter([],[],marker='|'))
     plt.setp(axis, xlim=(0,550), ylim=(0,5))
+
 fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
 fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
 fig.suptitle('SPIKE Data for channels ')
 plt.ylabel("Trials")
 
+# set up array to store timestamps & channel list as input
+totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
-
+stim_cond = ['a','b','c','d']
 stimulusComp_Inp = True
 while stimulusComp_Inp:
     
-    channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStampsList.append(channelDict)
-    plotGraph(channelDict,1)
-
-    channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStampsList.append(channelDict)
-    plotGraph(channelDict,2)
-
-    channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStampsList.append(channelDict)
-    plotGraph(channelDict,3)
-
-    channelDict = SpikeDataPerTrial(userIPchannels)
-    totTimeStampsList.append(channelDict)
-    plotGraph(channelDict,4)
+    # 4 trials
+    for tr in range(4):
+        channelDict = SpikeDataPerTrial(userIPchannels)
+        totTimeStampsList.append(channelDict)
+        plotGraph(channelDict,tr+1)
 
     totTimeStamps = defaultdict(list)
 
@@ -206,15 +183,10 @@ while stimulusComp_Inp:
     plt.title("no. of spikes vs Channel")
     plt.ylabel("count(SPK)")
 
-
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-        
         fig.savefig('plot.png')
         break
-
-
-
 
 
 
