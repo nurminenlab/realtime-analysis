@@ -158,7 +158,7 @@ fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 fig.suptitle('SPIKE Data for channels ')
 plt.ylabel("Trials")
 
-# set up array to store timestamps & channel list as input
+# setting up list/array to store timestamps , channel list as input , stimulus conditions
 totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
 stim_cond = ['a','b','c','d']
