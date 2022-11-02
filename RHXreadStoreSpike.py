@@ -118,7 +118,7 @@ def plotGraph(channelDict,trialCount):
 
         fig.canvas.draw()
         fig.canvas.flush_events()
-        time.sleep(0.1)  
+        time.sleep(0.05)  
 
 # TCP connection
 print('Connecting to TCP command server...')
@@ -153,41 +153,62 @@ for axis,i in zip(axes,range(len(axes))):
     sc.append(axis.scatter([],[],marker='|'))
     plt.setp(axis, xlim=(0,550), ylim=(0,5))
 
+
+fig.suptitle('SPIKE Data for channels ')
 fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
 fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
-fig.suptitle('SPIKE Data for channels ')
-plt.ylabel("Trials")
+
 
 # setting up list/array to store timestamps , channel list as input , stimulus conditions
 totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
-stim_cond = ['a','b','c','d']
+stim_condition = ['a','b','c','d']
 stimulusComp_Inp = True
+no_of_trials = 4
+SPKcount_Etrail = []
 while stimulusComp_Inp:
     
-    # 4 trials
-    for tr in range(4):
+    # note : trial1 => stim_cond1
+    #        trial2 => stim_cond2   etc
+    for tr in range(no_of_trials):
         channelDict = SpikeDataPerTrial(userIPchannels)
         totTimeStampsList.append(channelDict)
         plotGraph(channelDict,tr+1)
+        print(channelDict)
+        spikeCount = 0
+        for tsArr in channelDict.values(): #tsArr : time stamp Array
+            spikeCount+=len(tsArr)
+        SPKcount_Etrail.append(spikeCount)
+            
+        #numpy array - no.of spikes vs stim_cond
+        # realtime plot after every trial
+        # Lauri : save number of spikes in multi dimensional array
 
-    totTimeStamps = defaultdict(list)
+    totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
 
     for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
         for key, value in eachtrial.items():
             totTimeStamps[key].extend(value)
-    # Lauri : save number of spikes in multi dimensional array
+
     plt.figure(2)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
     plt.title("no. of spikes vs Channel")
     plt.ylabel("count(SPK)")
 
+    plt.figure(3)
+    palette = sns.color_palette("dark:red")
+    plt.bar(stim_condition,SPKcount_Etrail,color=palette)
+    plt.title("no. of spikes vs Stimulus Condition")
+    plt.ylabel("count(SPK)")
+
+
+
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-        print(totTimeStampsList)
-        fig.savefig('plot.png')
+        # fig.savefig('plot.png')
+        print(SPKcount_Etrail)
         break
 
 
