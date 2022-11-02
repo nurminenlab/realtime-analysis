@@ -9,6 +9,7 @@ from tkinter import Variable
 import seaborn as sns
 import numpy as np
 from collections import defaultdict
+import random
 
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
@@ -176,7 +177,7 @@ while stimulusComp_Inp:
     for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
         for key, value in eachtrial.items():
             totTimeStamps[key].extend(value)
-    
+    # Lauri : save number of spikes in multi dimensional array
     plt.figure(2)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
@@ -185,6 +186,7 @@ while stimulusComp_Inp:
 
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
+        print(totTimeStampsList)
         fig.savefig('plot.png')
         break
 
