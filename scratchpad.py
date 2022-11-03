@@ -5,19 +5,18 @@ import time
 import matplotlib.pyplot as plt
 
 #initialise
-x = np.linspace(0, 10, 100)
-y = np.linspace(20, 30, 100)
+x = np.array([])
+y = np.array([])
 plt.ion()
 
 figure, ax = plt.subplots(figsize=(10, 8))
-line1, = ax.plot(x, y)
-
-def updatePlot():
-	new_y = np.linspace(20, 40, 100)
+line1, = ax.plot(x, y,'o')
+plt.setp(ax, xlim=(0,6), ylim=(0,50))
+def updatePlot(x,y):
 	
 	#value update
 	line1.set_xdata(x)
-	line1.set_ydata(new_y)
+	line1.set_ydata(y)
 
 	figure.canvas.draw()
 	figure.canvas.flush_events()
@@ -29,5 +28,12 @@ while True:
     if user_input == "q":
         break
     if user_input =="u":
-        updatePlot()
+        updatePlot(1,10)
+        #time.sleep(0.5)
+        updatePlot(2,20)
+        #time.sleep(0.5)
+        updatePlot(3,30)
+        #time.sleep(0.5)
+        updatePlot(4,40)
+
 
