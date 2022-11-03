@@ -110,7 +110,7 @@ def SpikeDataPerTrial(inputChannelArray):
     return channelDict
 
 
-def plotGraph(channelDict,trialCount):
+def plotSPKvsCHNL(channelDict,trialCount):
     for i,xy in zip(range(4),xyArr):
         xy[0].extend(channelDict[userIPchannels[i]])
         xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else trialCount for x in range(len(channelDict[userIPchannels[i]]))])
@@ -120,6 +120,16 @@ def plotGraph(channelDict,trialCount):
         fig.canvas.flush_events()
         time.sleep(0.05)  
 
+def plotSPKvsSTIM(stim_cond,SPKcount,y1): #x = stim_cond  y = SPKcount (int)
+    x1.append(stim_cond)
+    y1 = np.append(y1,SPKcount)
+    line1.set_xdata(x1)
+    line1.set_ydata(y1)
+    fig2.canvas.draw()
+    fig2.canvas.flush_events()
+    time.sleep(0.1)
+    return y1
+    
 # TCP connection
 print('Connecting to TCP command server...')
 scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -142,28 +152,37 @@ print("opening plot......")
 # setting up plot 
 plt.ion() # Enable interactive mode for plot
 
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2,figsize=(10, 10))
 axes = [ax1,ax2,ax3,ax4] 
 # lauri : customize subplot according to channels 
 # fig, axes = plt.subplots(nX,nY)
 
+#plot set up for 4 channels and SPKs
 xyArr = [([],[]),([],[]),([],[]),([],[])] #for 4 channels (if > 4 Channels , append ([],[]) - note: it should be a tuple)
 sc = [] # scatter plot list
 for axis,i in zip(axes,range(len(axes))):
     sc.append(axis.scatter([],[],marker='|'))
     plt.setp(axis, xlim=(0,550), ylim=(0,5))
-
-
 fig.suptitle('SPIKE Data for channels ')
 fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
 fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
 
+#plot setup for number of spikes and stim_conditions
+x1 = []
+y1 = np.array([])
+fig2, ax = plt.subplots(figsize=(8, 8))
+line1, = ax.plot(x1, y1)
+plt.setp(ax, xlim=(0,6), ylim=(0,50))
+fig2.suptitle('No. of SPK vs Stimulus conditions')
+fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
+fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
+
 
 # setting up list/array to store timestamps , channel list as input , stimulus conditions
 totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
-stim_condition = ['a','b','c','d']
+tot_stim_condition = ['a','b','c','d']
 stimulusComp_Inp = True
 no_of_trials = 4
 SPKcount_Etrail = []
@@ -171,16 +190,16 @@ while stimulusComp_Inp:
     
     # note : trial1 => stim_cond1
     #        trial2 => stim_cond2   etc
-    for tr in range(no_of_trials):
+    for tr,stim_cond in zip(range(no_of_trials),tot_stim_condition):
         channelDict = SpikeDataPerTrial(userIPchannels)
         totTimeStampsList.append(channelDict)
-        plotGraph(channelDict,tr+1)
-        print(channelDict)
+        plotSPKvsCHNL(channelDict,tr+1)
+
         spikeCount = 0
         for tsArr in channelDict.values(): #tsArr : time stamp Array
             spikeCount+=len(tsArr)
         SPKcount_Etrail.append(spikeCount)
-            
+        y1 = plotSPKvsSTIM(tot_stim_condition.index(stim_cond)+1,spikeCount,y1)    
         #numpy array - no.of spikes vs stim_cond
         # realtime plot after every trial
         # Lauri : save number of spikes in multi dimensional array
@@ -190,21 +209,21 @@ while stimulusComp_Inp:
     for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
         for key, value in eachtrial.items():
             totTimeStamps[key].extend(value)
+    
+    '''
+    plt.figure(3)
+    palette = sns.color_palette("dark:red")
+    plt.bar(tot_stim_condition,SPKcount_Etrail,color=palette)
+    plt.title("no. of spikes vs Stimulus Condition")
+    plt.ylabel("count(SPK)")
+    '''
 
-    plt.figure(2)
+    plt.figure(4)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
     plt.title("no. of spikes vs Channel")
     plt.ylabel("count(SPK)")
-
-    plt.figure(3)
-    palette = sns.color_palette("dark:red")
-    plt.bar(stim_condition,SPKcount_Etrail,color=palette)
-    plt.title("no. of spikes vs Stimulus Condition")
-    plt.ylabel("count(SPK)")
-
-
-
+   
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
         # fig.savefig('plot.png')
