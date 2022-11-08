@@ -127,7 +127,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
         plotSPKvsSTIM_xy[stim_cond] = SPKcount    
 
     else:
-        plotSPKvsSTIM_xy[stim_cond] = ( plotSPKvsSTIM_xy[stim_cond] + SPKcount)/tr
+        plotSPKvsSTIM_xy[stim_cond] = ( plotSPKvsSTIM_xy[stim_cond] + SPKcount)/2
     #x1.append(stim_cond)
     x1 = list(plotSPKvsSTIM_xy.keys())
     y1 = list(plotSPKvsSTIM_xy.values())
@@ -141,7 +141,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
 # TCP connection
 print('Connecting to TCP command server...')
-scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 scommand.connect(('127.0.0.1', 5000))
 
 print('Connecting to TCP waveform server...')
@@ -195,6 +195,7 @@ totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
 plotSPKvsSTIM_xy = {}
 tot_stim_condition = ['a','c','b','d','e','d','a','c','b','e','d','e','b','c','a']
+#tot_stim_condition = ['a','c','b','c','a','b']
 unique_stim_conditions = len(list(set(tot_stim_condition)))
 stimulusComp_Inp = True
 no_of_trials = len(tot_stim_condition)
@@ -252,7 +253,7 @@ while stimulusComp_Inp:
    
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-
+        fig2.savefig("pic.png")
         print(data)
         break
 
