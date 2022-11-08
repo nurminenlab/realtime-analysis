@@ -1,6 +1,6 @@
 import random
 
-inputList = ['0','1','2','3','4','5']
+inputList = ['a','b','c','d','e','f']
 
 def shuffle_input(output):
     random.shuffle(output)

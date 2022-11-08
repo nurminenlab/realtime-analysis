@@ -36,7 +36,7 @@ def readChar(array, arrayIndex):
     return variable,arrayIndex
 
 
-def SpikeDataPerTrial(inputChannelArray):
+def SpikeDataPerTrial(inputChannelArray,stim_cond):
     channelDict = {channel:[] for channel in inputChannelArray}
 
     
@@ -100,18 +100,15 @@ def SpikeDataPerTrial(inputChannelArray):
         rawIndex = rawIndex + 1
         # append spikeID of every spike to the spikeIDarray list
         spikeCount = spikeCount + 1
-    
 
+        stim_SPK_Count[stim_cond] = len(spikeTimestamp)
+    
     '''print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
     print(channelDict)'''
 
-    spkC = np.nan * np.ones(len(channelDict))
-    for i in range(len(channelDict)):
-        spkC[i] = len(channelDict[SPKchannelArray[i]])
-
-    return channelDict, spkC
+    return channelDict,stim_SPK_Count
 
 
 def plotSPKvsCHNL(channelDict,trialCount):
@@ -124,15 +121,23 @@ def plotSPKvsCHNL(channelDict,trialCount):
         fig.canvas.flush_events()
         time.sleep(0.05)  
 
-def plotSPKvsSTIM(stim_cond,SPKcount,y1): #x = stim_cond  y = SPKcount (int)
-    x1.append(stim_cond)
-    y1 = np.append(y1,SPKcount)
+def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
+    
+    if stim_cond not in plotSPKvsSTIM_xy.keys():
+        plotSPKvsSTIM_xy[stim_cond] = SPKcount    
+
+    else:
+        plotSPKvsSTIM_xy[stim_cond] = ( plotSPKvsSTIM_xy[stim_cond] + SPKcount)/tr
+    #x1.append(stim_cond)
+    x1 = list(plotSPKvsSTIM_xy.keys())
+    y1 = list(plotSPKvsSTIM_xy.values())
+
     line1.set_xdata(x1)
-    line1.set_ydata(y1)
+    line1.set_ydata(y1)   
     fig2.canvas.draw()
     fig2.canvas.flush_events()
     time.sleep(0.1)
-    return y1
+
     
 # TCP connection
 print('Connecting to TCP command server...')
@@ -173,44 +178,54 @@ fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
 
 #plot setup for number of spikes and stim_conditions
-x1 = []
-y1 = np.array([])
+x1 = [str()]
+#y1 = np.array([None])  initializing an empty numpy array
+y1 =[None] # initialzing with None since x1 is initialized with empty string list
 fig2, ax = plt.subplots(figsize=(8, 8))
-line1, = ax.plot(x1, y1)
-plt.setp(ax, xlim=(0,6), ylim=(0,50))
+line1, = ax.plot(x1, y1,'-o')
+plt.setp(ax, xlim=(0,6), ylim=(0,25)) #xlim = unique_stim_conditions++
 fig2.suptitle('No. of SPK vs Stimulus conditions')
 fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
 fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
+#ax.set_xticklabels(['a','b','c','d','e','f'])
 
 
 # setting up list/array to store timestamps , channel list as input , stimulus conditions
 totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
-tot_stim_condition = ['a','b','c','d']
+plotSPKvsSTIM_xy = {}
+tot_stim_condition = ['a','c','b','d','e','d','a','c','b','e','d','e','b','c','a']
+unique_stim_conditions = len(list(set(tot_stim_condition)))
 stimulusComp_Inp = True
-no_of_trials = 4
+no_of_trials = len(tot_stim_condition)
 SPKcount_Etrail = []
+stim_SPK_Count = {}
+data = np.empty((0,unique_stim_conditions)) # 5 => unique(tot_Stim_condition)
 
-stim_trial_array = np.nan * np.ones((2000,stimulus_conditions,len(userIPchannels)))
+#stim_trial_array = np.nan * np.ones((2000,stimulus_conditions,len(userIPchannels)))
 
 while stimulusComp_Inp:
     
     # note : trial1 => stim_cond1
     #        trial2 => stim_cond2   etc
-    for tr,stim_cond in zip(range(no_of_trials),tot_stim_condition):
-        channelDict, spkC = SpikeDataPerTrial(userIPchannels)
+    for tr,stim_cond in zip(range(1,no_of_trials+1),tot_stim_condition):
+ 
+        channelDict,stim_SPK_Count = SpikeDataPerTrial(userIPchannels,stim_cond)
+        if (tr)%unique_stim_conditions == 0:
+            data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
+   
         totTimeStampsList.append(channelDict)
-        plotSPKvsCHNL(channelDict,tr+1)
-
-        stim_trial_array[rep,stim_cond,:] = spkC        
-        mn = np.nanmean(stim_trial_array[rep,stim_cond,:],axis=0)       
-
-
+        #plotSPKvsCHNL(channelDict,tr+1) 
         spikeCount = 0
         for tsArr in channelDict.values(): #tsArr : time stamp Array
-            spikeCount+=len(tsArr)
+            spikeCount+=len(tsArr)            
         SPKcount_Etrail.append(spikeCount)
-        y1 = plotSPKvsSTIM(tot_stim_condition.index(stim_cond)+1,spikeCount,y1)    
+        plotSPKvsSTIM(stim_cond,spikeCount)
+
+        #stim_trial_array[rep,stim_cond,:] = spkC        
+        #mn = np.nanmean(stim_trial_array[rep,stim_cond,:],axis=0)       
+
+
         #numpy array - no.of spikes vs stim_cond
         # realtime plot after every trial
         # Lauri : save number of spikes in multi dimensional array
@@ -228,7 +243,7 @@ while stimulusComp_Inp:
     plt.title("no. of spikes vs Stimulus Condition")
     plt.ylabel("count(SPK)")
     '''
-
+    
     plt.figure(4)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
@@ -237,8 +252,8 @@ while stimulusComp_Inp:
    
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-        # fig.savefig('plot.png')
-        print(SPKcount_Etrail)
+
+        print(data)
         break
 
 
