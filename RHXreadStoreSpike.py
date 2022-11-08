@@ -194,7 +194,7 @@ fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical'
 totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
 plotSPKvsSTIM_xy = {}
-tot_stim_condition = ['a','c','b','d','e','d','a','c','b','e','d','e','b','c','a']
+tot_stim_condition = ['a','c','b','d','e','d','a','c','b','e','d','e','b','c','a','e','a','c','d','b']
 #tot_stim_condition = ['a','c','b','c','a','b']
 unique_stim_conditions = len(list(set(tot_stim_condition)))
 stimulusComp_Inp = True
@@ -245,20 +245,21 @@ while stimulusComp_Inp:
     plt.ylabel("count(SPK)")
     '''
     
-    plt.figure(4)
+    plt.figure(1)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
     plt.title("no. of spikes vs Channel")
     plt.ylabel("count(SPK)")
+
+    plt.figure(2)
+    stimulus_cond = [data[:,i] for i in range(len(data)+1)]
+    fig3, axes = plt.subplots()
+    axes.boxplot(stimulus_cond)
+    
    
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-        fig2.savefig("pic.png")
-        print(data)
         break
-
-
-
 
 # Lauri Pseudo codes
 '''
