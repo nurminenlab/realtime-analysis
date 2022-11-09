@@ -247,7 +247,7 @@ while stimulusComp_Inp:
     plt.figure(2)
     stimulus_cond = [data[:,i] for i in range(len(data)+1)]
     fig3, axes = plt.subplots()
-    axes.boxplot(stimulus_cond)
+    axes.boxplot(stimulus_cond,showmeans=True)
     
    
     user_input = input("Enter 'q' to quit: ")
