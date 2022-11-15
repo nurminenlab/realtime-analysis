@@ -10,7 +10,7 @@ import seaborn as sns
 import numpy as np
 from collections import defaultdict
 import random
-
+from statistics import mean
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
     variable = int.from_bytes(variableBytes, byteorder='little', signed=False)
@@ -124,11 +124,12 @@ def plotSPKvsCHNL(channelDict,trialCount):
 def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
     if stim_cond not in plotSPKvsSTIM_xy.keys():
-        plotSPKvsSTIM_xy[stim_cond] = SPKcount    
+        plotSPKvsSTIM_xy[stim_cond] = [SPKcount]
 
     else:
-        plotSPKvsSTIM_xy[stim_cond] = ( plotSPKvsSTIM_xy[stim_cond] + SPKcount)/tr
-    #x1.append(stim_cond)
+        plotSPKvsSTIM_xy[stim_cond].extend([SPKcount])
+        plotSPKvsSTIM_xy[stim_cond] = [mean(plotSPKvsSTIM_xy[stim_cond])]
+
     x1 = list(plotSPKvsSTIM_xy.keys())
     y1 = list(plotSPKvsSTIM_xy.values())
 
@@ -141,7 +142,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
 # TCP connection
 print('Connecting to TCP command server...')
-scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 scommand.connect(('127.0.0.1', 5000))
 
 print('Connecting to TCP waveform server...')
@@ -176,7 +177,7 @@ fig.suptitle('SPIKE Data for channels ')
 fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
 fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
-
+plotSPKvsSTIM_y = []
 #plot setup for number of spikes and stim_conditions
 x1 = [str()]
 #y1 = np.array([None])  initializing an empty numpy array
@@ -194,11 +195,12 @@ fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical'
 totTimeStampsList = []
 userIPchannels = ["A-001","A-002","A-003","A-004"]
 plotSPKvsSTIM_xy = {}
-tot_stim_condition = ['a','c','b','d','e','d','a','c','b','e','d','e','b','c','a']
+tot_stim_condition = ['a','c','b','d','e','a','d','c','b','e','d','e','b','c','a','e','a','c','d','b']
+#tot_stim_condition = ['a','c','b','c','a','b']
 unique_stim_conditions = len(list(set(tot_stim_condition)))
 stimulusComp_Inp = True
 no_of_trials = len(tot_stim_condition)
-SPKcount_Etrail = []
+
 stim_SPK_Count = {}
 data = np.empty((0,unique_stim_conditions)) # 5 => unique(tot_Stim_condition)
 
@@ -215,11 +217,11 @@ while stimulusComp_Inp:
             data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
    
         totTimeStampsList.append(channelDict)
-        #plotSPKvsCHNL(channelDict,tr+1) 
+        plotSPKvsCHNL(channelDict,tr+1) 
         spikeCount = 0
         for tsArr in channelDict.values(): #tsArr : time stamp Array
             spikeCount+=len(tsArr)            
-        SPKcount_Etrail.append(spikeCount)
+
         plotSPKvsSTIM(stim_cond,spikeCount)
 
         #stim_trial_array[rep,stim_cond,:] = spkC        
@@ -236,28 +238,22 @@ while stimulusComp_Inp:
         for key, value in eachtrial.items():
             totTimeStamps[key].extend(value)
     
-    '''
-    plt.figure(3)
-    palette = sns.color_palette("dark:red")
-    plt.bar(tot_stim_condition,SPKcount_Etrail,color=palette)
-    plt.title("no. of spikes vs Stimulus Condition")
-    plt.ylabel("count(SPK)")
-    '''
-    
-    plt.figure(4)
+    plt.figure(1)
     palette = sns.color_palette("dark:violet")
     plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
     plt.title("no. of spikes vs Channel")
     plt.ylabel("count(SPK)")
+
+    plt.figure(2)
+    stimulus_cond = [data[:,i] for i in range(len(data)+1)]
+    fig3, axes = plt.subplots()
+    axes.boxplot(stimulus_cond,showmeans=True)
+    
    
     user_input = input("Enter 'q' to quit: ")
     if user_input == 'q':
-
         print(data)
         break
-
-
-
 
 # Lauri Pseudo codes
 '''
