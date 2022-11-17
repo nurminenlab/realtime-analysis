@@ -39,25 +39,13 @@ def readChar(array, arrayIndex):
 
 def SpikeDataPerTrial(inputChannelArray,stim_cond):
 
-    scommand.sendall(b'set runmode run')
     channelDict = {channel:[] for channel in inputChannelArray}
-
-    
-    for i in range(len(inputChannelArray)):
-        time.sleep(0.1)
-        tcpCommandSPKchannel ="set "+inputChannelArray[i]+".tcpdataoutputenabledspike true;" 
-        tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
-        scommand.sendall(tcpCommandSPKchannel)
-
 
     # run for 500ms - 0.5s
     time.sleep(0.5) 
 
     rawData = sSPK.recv(200000)
     #print(rawData)
-    
-    scommand.sendall(b'set runmode stop')
-    #time.sleep(0.1)
 
     spikeBytesPerBlock = 14
 
@@ -206,13 +194,17 @@ if __name__ == '__main__':
     stim_SPK_Count = {}
     data = np.empty((0,unique_stim_conditions)) # 5 => unique(tot_Stim_condition)
 
-    #stim_trial_array = np.nan * np.ones((2000,stimulus_conditions,len(userIPchannels)))
 
 
     setup_TCPconnection()
 
-    while stimulusComp_Inp:
+    if stimulusComp_Inp:
+        for i in range(len(userIPchannels)):
+            tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
+            tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
+            scommand.sendall(tcpCommandSPKchannel)
 
+        scommand.sendall(b'set runmode run')
         # note : trial1 => stim_cond1
         #        trial2 => stim_cond2   etc
         for tr,stim_cond in zip(range(1,no_of_trials+1),stimulus_data()):
@@ -230,29 +222,22 @@ if __name__ == '__main__':
 
             plotSPKvsSTIM(stim_cond,spikeCount)
 
-            #stim_trial_array[rep,stim_cond,:] = spkC        
-            #mn = np.nanmean(stim_trial_array[rep,stim_cond,:],axis=0)       
-
-
-            #numpy array - no.of spikes vs stim_cond
-            # realtime plot after every trial
-            # Lauri : save number of spikes in multi dimensional array
-
         totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
 
         for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
             for key, value in eachtrial.items():
                 totTimeStamps[key].extend(value)
-        
-        
 
+
+        # plot No. of spikes vs Channel
         plt.figure(3)
         palette = sns.color_palette("dark:violet")
         plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
-        plt.title("no. of spikes vs Channel")
+        plt.title("No. of spikes vs Channel")
         plt.ylabel("count(SPK)")
 
 
+        #plot No. of SPK vs Stimulus conditions
         stimulus_cond = [data[:,i] for i in range(len(data[0]))]
         fig3, axes = plt.subplots()
         fig3.suptitle('No. of SPK vs Stimulus conditions')
@@ -261,9 +246,9 @@ if __name__ == '__main__':
         #plt.show()
         user_input = input("Enter 'q' to quit: ")
         if user_input == 'q':
+            scommand.sendall(b'set runmode stop')
+            time.sleep(0.1)
             print(data)
-            print(stimulus_cond)
-            break
 
     # Lauri Pseudo codes
     '''
