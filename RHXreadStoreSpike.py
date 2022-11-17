@@ -97,6 +97,7 @@ def SpikeDataPerTrial(inputChannelArray,stim_cond):
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
     print(channelDict)'''
+    print(len(spikeTimestamp))
 
     return channelDict,stim_SPK_Count
 
@@ -109,7 +110,9 @@ def plotSPKvsCHNL(channelDict,trialCount):
 
         fig.canvas.draw()
         fig.canvas.flush_events()
+        print(xy)
         time.sleep(0.1)  
+
 
 def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
@@ -142,13 +145,13 @@ def setup_TCPconnection():
     sSPK.connect(('127.0.0.1', 5002))
 
     scommand.sendall(b'get runmode')
-    time.sleep(0.1)
+    #time.sleep(0.1)
 
     scommand.sendall(b'get sampleratehertz')
-    time.sleep(0.1)
+    #time.sleep(0.1)
 
     scommand.sendall(b'execute clearalldataoutputs')
-    time.sleep(0.1)
+    #time.sleep(0.1)
 
     
 if __name__ == '__main__':
@@ -182,17 +185,23 @@ if __name__ == '__main__':
     fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
     #ax.set_xticklabels(['a','b','c','d','e','f'])
 
-
+    '''   xerr = np.random.random_sample(10)
+        yerr = np.random.random_sample(10)
+        ax.errorbar(x1, y1,
+                    xerr=xerr,
+                    yerr=yerr,
+                    fmt='-o')
+    '''
     # setting up list/array to store timestamps , channel list as input , stimulus conditions
     totTimeStampsList = []
     userIPchannels = ["A-001","A-002","A-003","A-004"]
     plotSPKvsSTIM_xy = {}
-    unique_stim_conditions = len(list(set(stimulus_data())))
+    unique_count_stim_condn = len(list(set(stimulus_data())))
     stimulusComp_Inp = True
     no_of_trials = len(stimulus_data())
 
     stim_SPK_Count = {}
-    data = np.empty((0,unique_stim_conditions)) # 5 => unique(tot_Stim_condition)
+    data = np.empty((0,unique_count_stim_condn)) # 5 => unique(tot_Stim_condition)
 
 
 
@@ -211,7 +220,7 @@ if __name__ == '__main__':
     
             channelDict,stim_SPK_Count = SpikeDataPerTrial(userIPchannels,stim_cond)
 
-            if (tr)%unique_stim_conditions == 0:
+            if (tr)%unique_count_stim_condn == 0: # every repetition
                 data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
     
             totTimeStampsList.append(channelDict)
@@ -243,11 +252,11 @@ if __name__ == '__main__':
         fig3.suptitle('No. of SPK vs Stimulus conditions')
         axes.boxplot(stimulus_cond,showmeans=True)
 
+        scommand.sendall(b'set runmode stop')
         #plt.show()
         user_input = input("Enter 'q' to quit: ")
         if user_input == 'q':
-            scommand.sendall(b'set runmode stop')
-            time.sleep(0.1)
+        
             print(data)
 
     # Lauri Pseudo codes
