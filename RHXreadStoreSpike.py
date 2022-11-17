@@ -253,7 +253,7 @@ if __name__ == '__main__':
         plt.ylabel("count(SPK)")
 
 
-        stimulus_cond = [data[:,i] for i in range(len(data)+1)]
+        stimulus_cond = [data[:,i] for i in range(len(data[0]))]
         fig3, axes = plt.subplots()
         fig3.suptitle('No. of SPK vs Stimulus conditions')
         axes.boxplot(stimulus_cond,showmeans=True)
