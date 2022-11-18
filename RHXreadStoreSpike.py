@@ -97,7 +97,7 @@ def SpikeDataPerTrial(inputChannelArray,stim_cond):
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
     print(channelDict)'''
-    print(len(spikeTimestamp))
+    #print(len(spikeTimestamp))
 
     return channelDict,stim_SPK_Count
 
@@ -110,7 +110,6 @@ def plotSPKvsCHNL(channelDict,trialCount):
 
         fig.canvas.draw()
         fig.canvas.flush_events()
-        print(xy)
         time.sleep(0.1)  
 
 
@@ -177,7 +176,10 @@ if __name__ == '__main__':
     #y1 = np.array([None])  initializing an empty numpy array
     y1 =[int()] # initialzing with None since x1 is initialized with empty string list
     fig2, ax = plt.subplots(figsize=(8, 8))
-    line1, = ax.plot(x1, y1,'-o')
+    
+    line1, = ax.errorbar(x1, y1,yerr=,'-o')
+    
+
     ax.set_xlim(0,6) #xlim = unique_stim_conditions++
     ax.set_ylim(0,50)
     fig2.suptitle('No. of SPK vs Stimulus conditions')
