@@ -116,31 +116,15 @@ def plotSPKvsCHNL(channelDict,trialCount):
 def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
     if stim_cond not in plotSPKvsSTIM_xy.keys():
-        plotSPKvsSTIM_xy[stim_cond] = [SPKcount]
-        
+        plotSPKvsSTIM_xy[stim_cond] = [SPKcount]    
     else:
         plotSPKvsSTIM_xy[stim_cond].append(SPKcount) #= [plotSPKvsSTIM_xy[stim_cond],SPKcount]
-        #print(stim_cond,plotSPKvsSTIM_xy[stim_cond])
 
     x1 = list(plotSPKvsSTIM_xy.keys())
     y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
-
-    print(stim_cond,plotSPKvsSTIM_xy[stim_cond])
-
-    
-    line1.set_xdata(x1)
-    line1.set_ydata(y1)
-
-
-    line2 = ax.errorbar(x1,y1,yerr=statistics.pstdev(y1))
-    
-    '''plt.errorbar(x, y,capsize=2,
-             yerr = y_error,
-             fmt ='o')'''
-
-    fig2.canvas.draw()
-    fig2.canvas.flush_events()
-    time.sleep(0.1)
+    yerr = list(statistics.pstdev(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
+    ax.cla()
+    ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
 
 def setup_TCPconnection():    
     # TCP connection setup
@@ -163,8 +147,6 @@ def setup_TCPconnection():
     scommand.sendall(b'execute clearalldataoutputs')
     #time.sleep(0.1)
 
-    '''    fig.gca().relim()
-    fig.gca().autoscale_view()'''
 if __name__ == '__main__':
     # setting up plot 
     print("opening plot......")
@@ -189,7 +171,7 @@ if __name__ == '__main__':
     y1 =[int()] # initialzing with None since x1 is initialized with empty string list
     fig2, ax = plt.subplots(figsize=(8, 8))
     
-    #line1, = ax.errorbar(x1, y1,yerr=,'-o')
+ 
     line1, = ax.plot(x1, y1,'-o')
     ax.set_xlim(0,6) #xlim = unique_stim_conditions++
     ax.set_ylim(0,50)
@@ -197,14 +179,7 @@ if __name__ == '__main__':
     fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
     fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
     #ax.set_xticklabels(['a','b','c','d','e','f'])
-
-    '''   xerr = np.random.random_sample(10)
-        yerr = np.random.random_sample(10)
-        ax.errorbar(x1, y1,
-                    xerr=xerr,
-                    yerr=yerr,
-                    fmt='-o')
-    '''
+ 
     # setting up list/array to store timestamps , channel list as input , stimulus conditions
     totTimeStampsList = []
     userIPchannels = ["A-001","A-002","A-003","A-004"]
@@ -266,6 +241,7 @@ if __name__ == '__main__':
 
         scommand.sendall(b'set runmode stop')
         #plt.show()
+        print(plotSPKvsSTIM_xy)
         user_input = input("Enter 'q' to quit: ")
         if user_input == 'q':
         
