@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import math
 from ctypes import sizeof
-
+import statistics
 from tkinter import Variable
 import seaborn as sns
 import numpy as np
@@ -117,16 +117,27 @@ def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
     if stim_cond not in plotSPKvsSTIM_xy.keys():
         plotSPKvsSTIM_xy[stim_cond] = [SPKcount]
-
+        
     else:
-        plotSPKvsSTIM_xy[stim_cond].extend([SPKcount])
-        plotSPKvsSTIM_xy[stim_cond] = [mean(plotSPKvsSTIM_xy[stim_cond])]
+        plotSPKvsSTIM_xy[stim_cond].append(SPKcount) #= [plotSPKvsSTIM_xy[stim_cond],SPKcount]
+        #print(stim_cond,plotSPKvsSTIM_xy[stim_cond])
 
     x1 = list(plotSPKvsSTIM_xy.keys())
-    y1 = list(plotSPKvsSTIM_xy.values())
+    y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
 
+    print(stim_cond,plotSPKvsSTIM_xy[stim_cond])
+
+    
     line1.set_xdata(x1)
-    line1.set_ydata(y1)   
+    line1.set_ydata(y1)
+
+
+    line2 = ax.errorbar(x1,y1,yerr=statistics.pstdev(y1))
+    
+    '''plt.errorbar(x, y,capsize=2,
+             yerr = y_error,
+             fmt ='o')'''
+
     fig2.canvas.draw()
     fig2.canvas.flush_events()
     time.sleep(0.1)
@@ -152,7 +163,8 @@ def setup_TCPconnection():
     scommand.sendall(b'execute clearalldataoutputs')
     #time.sleep(0.1)
 
-    
+    '''    fig.gca().relim()
+    fig.gca().autoscale_view()'''
 if __name__ == '__main__':
     # setting up plot 
     print("opening plot......")
@@ -177,9 +189,8 @@ if __name__ == '__main__':
     y1 =[int()] # initialzing with None since x1 is initialized with empty string list
     fig2, ax = plt.subplots(figsize=(8, 8))
     
-    line1, = ax.errorbar(x1, y1,yerr=,'-o')
-    
-
+    #line1, = ax.errorbar(x1, y1,yerr=,'-o')
+    line1, = ax.plot(x1, y1,'-o')
     ax.set_xlim(0,6) #xlim = unique_stim_conditions++
     ax.set_ylim(0,50)
     fig2.suptitle('No. of SPK vs Stimulus conditions')
@@ -205,9 +216,7 @@ if __name__ == '__main__':
     stim_SPK_Count = {}
     data = np.empty((0,unique_count_stim_condn)) # 5 => unique(tot_Stim_condition)
 
-
-
-    setup_TCPconnection()
+    setup_TCPconnection() 
 
     if stimulusComp_Inp:
         for i in range(len(userIPchannels)):
@@ -253,6 +262,7 @@ if __name__ == '__main__':
         fig3, axes = plt.subplots()
         fig3.suptitle('No. of SPK vs Stimulus conditions')
         axes.boxplot(stimulus_cond,showmeans=True)
+
 
         scommand.sendall(b'set runmode stop')
         #plt.show()
