@@ -107,11 +107,12 @@ def plotSPKvsCHNL(channelDict,trialCount):
         xy[0].extend(channelDict[userIPchannels[i]])
         xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else trialCount for x in range(len(channelDict[userIPchannels[i]]))])
         sc[i].set_offsets(np.c_[xy[0],xy[1]])
-
         fig.canvas.draw()
         fig.canvas.flush_events()
-        time.sleep(0.1)  
-
+        #plt.setp(axes, xlim=(0,(550 + max(xy[0]))), ylim=(0,5))
+        
+        time.sleep(0.1)
+    
 
 def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
     
@@ -148,19 +149,26 @@ def setup_TCPconnection():
     #time.sleep(0.1)
 
 if __name__ == '__main__':
+    if stimulus_data():
+        stimulusComp_Inp = True
+        setup_TCPconnection()
+    else:
+        stimulusComp_Inp = False
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2,figsize=(10, 10))
-    axes = [ax1,ax2,ax3,ax4] 
+    
+    axes = [ax1,ax2,ax3,ax4]
     # fig, axes = plt.subplots(nX,nY)
 
     #plot set up for 4 channels and SPKs
     xyArr = [([],[]),([],[]),([],[]),([],[])] #for 4 channels (if > 4 Channels , append ([],[]) - note: it should be a tuple)
     sc = [] # scatter plot list
     for axis,i in zip(axes,range(len(axes))):
-        sc.append(axis.scatter([],[],marker='|'))
         plt.setp(axis, xlim=(0,550), ylim=(0,5))
+        sc.append(axis.scatter([],[],marker='|'))
+        
     fig.suptitle('SPIKE Data for channels ')
     fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
     fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
@@ -170,9 +178,6 @@ if __name__ == '__main__':
     #y1 = np.array([None])  initializing an empty numpy array
     y1 =[int()] # initialzing with None since x1 is initialized with empty string list
     fig2, ax = plt.subplots(figsize=(8, 8))
-    
- 
-    line1, = ax.plot(x1, y1,'-o')
     ax.set_xlim(0,6) #xlim = unique_stim_conditions++
     ax.set_ylim(0,50)
     fig2.suptitle('No. of SPK vs Stimulus conditions')
@@ -182,18 +187,14 @@ if __name__ == '__main__':
  
     # setting up list/array to store timestamps , channel list as input , stimulus conditions
     totTimeStampsList = []
-    userIPchannels = ["A-001","A-002","A-003","A-004"]
+    userIPchannels = ["A-004","A-002","A-003","A-005"]
     plotSPKvsSTIM_xy = {}
-    unique_count_stim_condn = len(list(set(stimulus_data())))
-    stimulusComp_Inp = True
-    no_of_trials = len(stimulus_data())
-
     stim_SPK_Count = {}
-    data = np.empty((0,unique_count_stim_condn)) # 5 => unique(tot_Stim_condition)
-
-    setup_TCPconnection() 
 
     if stimulusComp_Inp:
+        unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
+        no_of_trials = len(stimulus_data())
+        data = np.empty((0,unique_count_stim_condn))
         for i in range(len(userIPchannels)):
             tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
             tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
@@ -240,12 +241,22 @@ if __name__ == '__main__':
 
 
         scommand.sendall(b'set runmode stop')
-        #plt.show()
-        print(plotSPKvsSTIM_xy)
+        
         user_input = input("Enter 'q' to quit: ")
         if user_input == 'q':
         
             print(data)
+
+    else:
+        raise Exception("No Stimulus Input Present, intan TCP connection terminated")
+
+
+
+
+
+
+
+
 
     # Lauri Pseudo codes
     '''
@@ -271,3 +282,4 @@ if __name__ == '__main__':
 
 
     '''
+
