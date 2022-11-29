@@ -114,18 +114,19 @@ def plotSPKvsCHNL(channelDict,trialCount):
         time.sleep(0.1)
     
 
-def plotSPKvsSTIM(stim_cond,SPKcount): #x = stim_cond  y = SPKcount (int)
+def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     
     if stim_cond not in plotSPKvsSTIM_xy.keys():
         plotSPKvsSTIM_xy[stim_cond] = [SPKcount]    
     else:
         plotSPKvsSTIM_xy[stim_cond].append(SPKcount) #= [plotSPKvsSTIM_xy[stim_cond],SPKcount]
-
+    n = n + 1
     x1 = list(plotSPKvsSTIM_xy.keys())
     y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
-    yerr = list(statistics.pstdev(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
+    yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/n) for key in plotSPKvsSTIM_xy.keys())
     ax.cla()
     ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
+    return n
 
 def setup_TCPconnection():    
     # TCP connection setup
@@ -154,6 +155,9 @@ if __name__ == '__main__':
         setup_TCPconnection()
     else:
         stimulusComp_Inp = False
+
+    # number of elements in the sample
+    n = 0
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
@@ -216,7 +220,7 @@ if __name__ == '__main__':
             for tsArr in channelDict.values(): #tsArr : time stamp Array
                 spikeCount+=len(tsArr)            
 
-            plotSPKvsSTIM(stim_cond,spikeCount)
+            n = plotSPKvsSTIM(stim_cond,spikeCount,n)
 
         totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
 
@@ -246,6 +250,7 @@ if __name__ == '__main__':
         if user_input == 'q':
         
             print(data)
+            print("n is ", n )
 
     else:
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
