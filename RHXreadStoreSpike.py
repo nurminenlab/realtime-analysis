@@ -120,7 +120,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
         plotSPKvsSTIM_xy[stim_cond] = [SPKcount]    
     else:
         plotSPKvsSTIM_xy[stim_cond].append(SPKcount) #= [plotSPKvsSTIM_xy[stim_cond],SPKcount]
-    n = n + 1
+    n += 1
     x1 = list(plotSPKvsSTIM_xy.keys())
     y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
     yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/n) for key in plotSPKvsSTIM_xy.keys())
@@ -161,9 +161,8 @@ if __name__ == '__main__':
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2,figsize=(10, 10))
+    fig, axes = plt.subplots(4,1,figsize=(10, 10)) # returns fig and list of axes
     
-    axes = [ax1,ax2,ax3,ax4]
     # fig, axes = plt.subplots(nX,nY)
 
     #plot set up for 4 channels and SPKs
