@@ -103,14 +103,14 @@ def SpikeDataPerTrial(inputChannelArray,stim_cond):
 
 
 def plotSPKvsCHNL(channelDict,trialCount):
-    for i,xy in zip(range(4),xyArr):
+    for i,xy in zip(range(len(userIPchannels)),xyArr):
         xy[0].extend(channelDict[userIPchannels[i]])
-        xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else trialCount for x in range(len(channelDict[userIPchannels[i]]))])
+        xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else 1 for x in range(len(channelDict[userIPchannels[i]]))])
         sc[i].set_offsets(np.c_[xy[0],xy[1]])
+        plt.setp(axes, xlim=(0,100+(max(xy[0], default=0))))
+
         fig.canvas.draw()
         fig.canvas.flush_events()
-        #plt.setp(axes, xlim=(0,(550 + max(xy[0]))), ylim=(0,5))
-        
         time.sleep(0.1)
     
 
@@ -158,15 +158,22 @@ if __name__ == '__main__':
 
     # number of elements in the sample
     n = 0
+
+    # setting up list/array to store channel list as input
+    userIPchannels = ["A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
+    if len(userIPchannels) > 10 or len(userIPchannels) < 2:
+        scommand.sendall(b'set runmode stop')
+        raise Exception("Check the number of input channels \n min :2 & max :10 ")    
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
-    fig, axes = plt.subplots(4,1,figsize=(10, 10)) # returns fig and list of axes
+    fig, axes = plt.subplots(len(userIPchannels),1,figsize=(10, 10)) # returns fig and list of axes
     
     # fig, axes = plt.subplots(nX,nY)
 
-    #plot set up for 4 channels and SPKs
-    xyArr = [([],[]),([],[]),([],[]),([],[])] #for 4 channels (if > 4 Channels , append ([],[]) - note: it should be a tuple)
+    #plot set up for n(len of userIPchannels) channels and SPKs
+    xyArr = []
+    xyArr.extend(([],[]) for x in range(len(userIPchannels)))
     sc = [] # scatter plot list
     for axis,i in zip(axes,range(len(axes))):
         plt.setp(axis, xlim=(0,550), ylim=(0,5))
@@ -190,7 +197,6 @@ if __name__ == '__main__':
  
     # setting up list/array to store timestamps , channel list as input , stimulus conditions
     totTimeStampsList = []
-    userIPchannels = ["A-004","A-002","A-003","A-005"]
     plotSPKvsSTIM_xy = {}
     stim_SPK_Count = {}
 
@@ -251,8 +257,11 @@ if __name__ == '__main__':
             print(data)
             print("n is ", n )
 
+
     else:
+        scommand.sendall(b'set runmode stop')
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
+        
 
 
 
