@@ -111,7 +111,7 @@ def plotSPKvsCHNL(channelDict,trialCount):
 
         fig.canvas.draw()
         fig.canvas.flush_events()
-        time.sleep(0.1)
+
     
 
 def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     xyArr.extend(([],[]) for x in range(len(userIPchannels)))
     sc = [] # scatter plot list
     for axis,i in zip(axes,range(len(axes))):
-        plt.setp(axis, xlim=(0,550), ylim=(0,5))
+        plt.setp(axis, xlim=(0,550), ylim=(0,2))
         sc.append(axis.scatter([],[],marker='|'))
         
     fig.suptitle('SPIKE Data for channels ')
