@@ -92,7 +92,8 @@ def SpikeDataPerTrial(inputChannelArray,stim_cond):
         spikeCount = spikeCount + 1
 
         stim_SPK_Count[stim_cond] = len(spikeTimestamp)
-    
+
+    print(SPKchannel ,"  ",stim_cond,"  ",spikeCount )
     '''print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
@@ -112,8 +113,6 @@ def plotSPKvsCHNL(channelDict,trialCount):
         fig.canvas.draw()
         fig.canvas.flush_events()
 
-    
-
 def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     
     if stim_cond not in plotSPKvsSTIM_xy.keys():
@@ -126,6 +125,9 @@ def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/n) for key in plotSPKvsSTIM_xy.keys())
     ax.cla()
     ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
+
+    fig2.canvas.draw()
+    fig2.canvas.flush_events()
     return n
 
 def setup_TCPconnection():    
@@ -160,7 +162,8 @@ if __name__ == '__main__':
     n = 0
 
     # setting up list/array to store channel list as input
-    userIPchannels = ["A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
+    #userIPchannels = ["A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
+    userIPchannels = ["A-001","A-002"]
     if len(userIPchannels) > 10 or len(userIPchannels) < 2:
         scommand.sendall(b'set runmode stop')
         raise Exception("Check the number of input channels \n min :2 & max :10 ")    
@@ -199,7 +202,7 @@ if __name__ == '__main__':
     totTimeStampsList = []
     plotSPKvsSTIM_xy = {}
     stim_SPK_Count = {}
-
+    print(stimulus_data())
     if stimulusComp_Inp:
         unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
         no_of_trials = len(stimulus_data())
@@ -248,15 +251,12 @@ if __name__ == '__main__':
         fig3.suptitle('No. of SPK vs Stimulus conditions')
         axes.boxplot(stimulus_cond,showmeans=True)
 
-
-        scommand.sendall(b'set runmode stop')
-        
+        scommand.sendall(b'set runmode stop')        
         user_input = input("Enter 'q' to quit: ")
         if user_input == 'q':
         
             print(data)
             print("n is ", n )
-
 
     else:
         scommand.sendall(b'set runmode stop')
