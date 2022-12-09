@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 import math
 from ctypes import sizeof
 import statistics
-from tkinter import Variable
+from tkinter import *
 import seaborn as sns
 import numpy as np
 from collections import defaultdict
@@ -93,7 +93,7 @@ def SpikeDataPerTrial(inputChannelArray,stim_cond):
 
         stim_SPK_Count[stim_cond] = len(spikeTimestamp)
 
-    print(SPKchannel ,"  ",stim_cond,"  ",spikeCount )
+    # print(SPKchannel ,"  ",stim_cond,"  ",spikeCount ) - store this to tensor
     '''print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
@@ -161,9 +161,16 @@ if __name__ == '__main__':
     # number of elements in the sample
     n = 0
 
-    # setting up list/array to store channel list as input
-    #userIPchannels = ["A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
-    userIPchannels = ["A-001","A-002"]
+    # get input channels from user
+    channel_window = Tk()    
+    channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
+    userIPchannels=[]
+    for x in range(len(channels)):
+        l = Checkbutton(channel_window, text=channels[x], variable=channels[x],command=lambda x=channels[x]:userIPchannels.append(x))
+        l.pack(anchor = 'w')
+    Button(channel_window,text="Ok",command=lambda: [print("selected channels ",userIPchannels),channel_window.destroy()]).pack()
+    channel_window.mainloop()
+    
     if len(userIPchannels) > 10 or len(userIPchannels) < 2:
         scommand.sendall(b'set runmode stop')
         raise Exception("Check the number of input channels \n min :2 & max :10 ")    
