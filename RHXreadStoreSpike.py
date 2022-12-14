@@ -122,7 +122,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     n += 1
     x1 = list(plotSPKvsSTIM_xy.keys())
     y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
-    yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/n) for key in plotSPKvsSTIM_xy.keys())
+    yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/math.sqrt(n)) for key in plotSPKvsSTIM_xy.keys())
     ax.cla()
     ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
 
@@ -152,15 +152,7 @@ def setup_TCPconnection():
     #time.sleep(0.1)
 
 if __name__ == '__main__':
-    if stimulus_data():
-        stimulusComp_Inp = True
-        setup_TCPconnection()
-    else:
-        stimulusComp_Inp = False
-
-    # number of elements in the sample
-    n = 0
-
+    
     # get input channels from user
     channel_window = Tk()    
     channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
@@ -170,10 +162,17 @@ if __name__ == '__main__':
         l.pack(anchor = 'w')
     Button(channel_window,text="Ok",command=lambda: [print("selected channels ",userIPchannels),channel_window.destroy()]).pack()
     channel_window.mainloop()
+
+    if stimulus_data():
+        stimulusComp_Inp = True
+        
+    else:
+        stimulusComp_Inp = False
+
+    # number of elements in the sample
+    n = 0
     
-    if len(userIPchannels) > 10 or len(userIPchannels) < 2:
-        scommand.sendall(b'set runmode stop')
-        raise Exception("Check the number of input channels \n min :2 & max :10 ")    
+    
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
@@ -211,6 +210,11 @@ if __name__ == '__main__':
     stim_SPK_Count = {}
     print(stimulus_data())
     if stimulusComp_Inp:
+        setup_TCPconnection()
+        if len(userIPchannels) > 10 or len(userIPchannels) < 1:
+            scommand.sendall(b'set runmode stop')
+            raise Exception("Check the number of input channels \n min :2 & max :10 ")
+
         unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
         no_of_trials = len(stimulus_data())
         data = np.empty((0,unique_count_stim_condn))
@@ -260,6 +264,7 @@ if __name__ == '__main__':
 
         scommand.sendall(b'set runmode stop')        
         user_input = input("Enter 'q' to quit: ")
+
         if user_input == 'q':
         
             print(data)
