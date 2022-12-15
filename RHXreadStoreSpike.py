@@ -12,6 +12,8 @@ from collections import defaultdict
 import random
 from statistics import mean
 from send_stim_condition import stimulus_data
+from numba import njit,cuda
+
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
     variable = int.from_bytes(variableBytes, byteorder='little', signed=False)
@@ -36,7 +38,7 @@ def readChar(array, arrayIndex):
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
 
-
+  
 def SpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
@@ -143,25 +145,28 @@ def setup_TCPconnection():
     sSPK.connect(('127.0.0.1', 5002))
 
     scommand.sendall(b'get runmode')
-    #time.sleep(0.1)
+    time.sleep(0.1)
 
     scommand.sendall(b'get sampleratehertz')
-    #time.sleep(0.1)
+    time.sleep(0.1)
 
     scommand.sendall(b'execute clearalldataoutputs')
-    #time.sleep(0.1)
+    time.sleep(0.1)
 
 if __name__ == '__main__':
     
     # get input channels from user
     channel_window = Tk()    
-    channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-009","A-010"]
+    channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-008","A-009","A-010"]
     userIPchannels=[]
     for x in range(len(channels)):
         l = Checkbutton(channel_window, text=channels[x], variable=channels[x],command=lambda x=channels[x]:userIPchannels.append(x))
         l.pack(anchor = 'w')
     Button(channel_window,text="Ok",command=lambda: [print("selected channels ",userIPchannels),channel_window.destroy()]).pack()
     channel_window.mainloop()
+            
+    if len(userIPchannels) > 10 or len(userIPchannels) < 1:
+        raise Exception("Check the number of input channels \n min :2 & max :10 ")
 
     if stimulus_data():
         stimulusComp_Inp = True
@@ -177,16 +182,23 @@ if __name__ == '__main__':
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
     fig, axes = plt.subplots(len(userIPchannels),1,figsize=(10, 10)) # returns fig and list of axes
-    
+    manager = plt.get_current_fig_manager()
+    manager.full_screen_toggle()
     # fig, axes = plt.subplots(nX,nY)
 
     #plot set up for n(len of userIPchannels) channels and SPKs
     xyArr = []
     xyArr.extend(([],[]) for x in range(len(userIPchannels)))
     sc = [] # scatter plot list
-    for axis,i in zip(axes,range(len(axes))):
-        plt.setp(axis, xlim=(0,550), ylim=(0,2))
-        sc.append(axis.scatter([],[],marker='|'))
+    #for axis,i in zip(axes,range(len(axes))):
+
+    if type(axes)== np.ndarray: #checking the axes type, so if only 1 channel is selected, var axes will not be a np.ndarray
+        for axis in axes:
+            plt.setp(axis, xlim=(0,550), ylim=(0,2))
+            sc.append(axis.scatter([],[],marker='|'))
+    else:
+        plt.setp(axes, xlim=(0,550), ylim=(0,2))
+        sc.append(axes.scatter([],[],marker='|')) 
         
     fig.suptitle('SPIKE Data for channels ')
     fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
@@ -211,10 +223,6 @@ if __name__ == '__main__':
     print(stimulus_data())
     if stimulusComp_Inp:
         setup_TCPconnection()
-        if len(userIPchannels) > 10 or len(userIPchannels) < 1:
-            scommand.sendall(b'set runmode stop')
-            raise Exception("Check the number of input channels \n min :2 & max :10 ")
-
         unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
         no_of_trials = len(stimulus_data())
         data = np.empty((0,unique_count_stim_condn))
