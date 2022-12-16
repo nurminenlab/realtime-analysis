@@ -95,7 +95,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
         stim_SPK_Count[stim_cond] = len(spikeTimestamp)
 
-    # print(SPKchannel ,"  ",stim_cond,"  ",spikeCount ) - store this to tensor
+    print(SPKchannel ,"  ",stim_cond,"  ",spikeCount ) #store this to tensor
     '''print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     if stimulusComp_Inp:
         setup_TCPconnection()
         unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
-        no_of_trials = len(stimulus_data())
+        runs = len(stimulus_data())
         data = np.empty((0,unique_count_stim_condn))
         for i in range(len(userIPchannels)):
             tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
@@ -234,15 +234,15 @@ if __name__ == '__main__':
         scommand.sendall(b'set runmode run')
         # note : trial1 => stim_cond1
         #        trial2 => stim_cond2   etc
-        for tr,stim_cond in zip(range(1,no_of_trials+1),stimulus_data()):
+        for run,stim_cond in zip(range(1,runs+1),stimulus_data()):
     
             channelDict,stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
 
-            if (tr)%unique_count_stim_condn == 0: # every repetition
+            if (run)%unique_count_stim_condn == 0: # every repetition
                 data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
     
             totTimeStampsList.append(channelDict)
-            plotSPKvsCHNL(channelDict,tr) 
+            plotSPKvsCHNL(channelDict,run) 
             spikeCount = 0
             for tsArr in channelDict.values(): #tsArr : time stamp Array
                 spikeCount+=len(tsArr)            
