@@ -13,7 +13,7 @@ import random
 from statistics import mean
 from send_stim_condition import stimulus_data
 from numba import njit,cuda
-
+import pandas as pd
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
     variable = int.from_bytes(variableBytes, byteorder='little', signed=False)
@@ -65,7 +65,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
     channelName = rawData[4:9]
     print(channelName.decode()) '''
 
-    for block in range(numBlocks):
+    for block in range(numBlocks): # loops through every SPIKE
         # Expect 4 bytes to be TCP Magic Number as uint32.
         # If not what's expected, raise an exception.
         magicNumber, rawIndex = readUint32(rawData, rawIndex)
@@ -93,9 +93,16 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         # append spikeID of every spike to the spikeIDarray list
         spikeCount = spikeCount + 1
 
-        stim_SPK_Count[stim_cond] = len(spikeTimestamp)
+        stim_SPK_Count[stim_cond] = spikeCount
 
-    print(SPKchannel ,"  ",stim_cond,"  ",spikeCount ) #store this to tensor
+    #print(SPKchannel ,"  ",stim_cond,"  ",spikeCount ) #store this to tensor 
+    for ch in channelDict:
+        if ch not in channelDict.keys():
+            channelDict[ch] = 0
+            data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] 
+        else:    
+            data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
+
     '''print(f'channels with spike {SPKchannelArray}')
     print(f'total number of spikes {spikeCount}')  
     print("amplifier Timestamps", spikeTimestamp)
@@ -114,6 +121,8 @@ def plotSPKvsCHNL(channelDict,trialCount):
 
         fig.canvas.draw()
         fig.canvas.flush_events()
+        time.sleep(0.0002)
+
 
 def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     
@@ -130,6 +139,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
 
     fig2.canvas.draw()
     fig2.canvas.flush_events()
+    time.sleep(0.0002)
     return n
 
 def setup_TCPconnection():    
@@ -220,7 +230,12 @@ if __name__ == '__main__':
     totTimeStampsList = []
     plotSPKvsSTIM_xy = {}
     stim_SPK_Count = {}
-    print(stimulus_data())
+
+    print('Stimulus Conition Data ',stimulus_data())
+    data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
+
+
+
     if stimulusComp_Inp:
         setup_TCPconnection()
         unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
@@ -234,8 +249,10 @@ if __name__ == '__main__':
         scommand.sendall(b'set runmode run')
         # note : trial1 => stim_cond1
         #        trial2 => stim_cond2   etc
+        count = 0
         for run,stim_cond in zip(range(1,runs+1),stimulus_data()):
-    
+            count+=1
+            print(count)
             channelDict,stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
 
             if (run)%unique_count_stim_condn == 0: # every repetition
@@ -248,7 +265,7 @@ if __name__ == '__main__':
                 spikeCount+=len(tsArr)            
 
             n = plotSPKvsSTIM(stim_cond,spikeCount,n)
-
+        scommand.sendall(b'set runmode stop')  
         totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
 
         for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
@@ -270,14 +287,14 @@ if __name__ == '__main__':
         fig3.suptitle('No. of SPK vs Stimulus conditions')
         axes.boxplot(stimulus_cond,showmeans=True)
 
-        scommand.sendall(b'set runmode stop')        
+              
         user_input = input("Enter 'q' to quit: ")
 
         if user_input == 'q':
-        
-            print(data)
+            print(data) # spk & stim cond
+            print(data_df) # spk & channel
             print("n is ", n )
-            print(channelDict)
+            
 
 
     else:

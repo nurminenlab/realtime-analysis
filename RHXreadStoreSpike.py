@@ -114,6 +114,7 @@ def plotSPKvsCHNL(channelDict,trialCount):
 
         fig.canvas.draw()
         fig.canvas.flush_events()
+        time.sleep(0.0002)
 
 def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     
