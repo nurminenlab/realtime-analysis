@@ -95,7 +95,6 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
         stim_SPK_Count[stim_cond] = spikeCount
 
-    #print(SPKchannel ,"  ",stim_cond,"  ",spikeCount ) #store this to tensor 
     for ch in channelDict:
         if ch not in channelDict.keys():
             channelDict[ch] = 0
@@ -103,11 +102,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         else:    
             data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
 
-    '''print(f'channels with spike {SPKchannelArray}')
-    print(f'total number of spikes {spikeCount}')  
-    print("amplifier Timestamps", spikeTimestamp)
-    print(channelDict)'''
-    #print(len(spikeTimestamp))
+    # get trial here => (1 stim_cond, n channels)
 
     return channelDict,stim_SPK_Count
 
@@ -191,28 +186,6 @@ if __name__ == '__main__':
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
-    fig, axes = plt.subplots(len(userIPchannels),1,figsize=(10, 10)) # returns fig and list of axes
-    manager = plt.get_current_fig_manager()
-    manager.full_screen_toggle()
-    # fig, axes = plt.subplots(nX,nY)
-
-    #plot set up for n(len of userIPchannels) channels and SPKs
-    xyArr = []
-    xyArr.extend(([],[]) for x in range(len(userIPchannels)))
-    sc = [] # scatter plot list
-    #for axis,i in zip(axes,range(len(axes))):
-
-    if type(axes)== np.ndarray: #checking the axes type, so if only 1 channel is selected, var axes will not be a np.ndarray
-        for axis in axes:
-            plt.setp(axis, xlim=(0,550), ylim=(0,2))
-            sc.append(axis.scatter([],[],marker='|'))
-    else:
-        plt.setp(axes, xlim=(0,550), ylim=(0,2))
-        sc.append(axes.scatter([],[],marker='|')) 
-        
-    fig.suptitle('SPIKE Data for channels ')
-    fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
-    fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
     #plot setup for number of spikes and stim_conditions
     x1 = [str()]
@@ -231,9 +204,8 @@ if __name__ == '__main__':
     plotSPKvsSTIM_xy = {}
     stim_SPK_Count = {}
 
-    print('Stimulus Conition Data ',stimulus_data())
+    #print('Stimulus Condition Data ',stimulus_data())
     data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
-
 
 
     if stimulusComp_Inp:
@@ -247,53 +219,32 @@ if __name__ == '__main__':
             scommand.sendall(tcpCommandSPKchannel)
 
         scommand.sendall(b'set runmode run')
-        # note : trial1 => stim_cond1
-        #        trial2 => stim_cond2   etc
-        count = 0
+        # note : trial1 => stim_cond1 for n channels
+        #        trial2 => stim_cond2 for n channels  etc
+
         for run,stim_cond in zip(range(1,runs+1),stimulus_data()):
-            count+=1
-            print(count)
+
             channelDict,stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
 
             if (run)%unique_count_stim_condn == 0: # every repetition
                 data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
     
             totTimeStampsList.append(channelDict)
-            plotSPKvsCHNL(channelDict,run) 
             spikeCount = 0
             for tsArr in channelDict.values(): #tsArr : time stamp Array
                 spikeCount+=len(tsArr)            
 
             n = plotSPKvsSTIM(stim_cond,spikeCount,n)
-        scommand.sendall(b'set runmode stop')  
-        totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
-
-        for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
-            for key, value in eachtrial.items():
-                totTimeStamps[key].extend(value)
-
-
-        # plot No. of spikes vs Channel
-        plt.figure(3)
-        palette = sns.color_palette("dark:violet")
-        plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
-        plt.title("No. of spikes vs Channel")
-        plt.ylabel("count(SPK)")
-
-
-        #plot No. of SPK vs Stimulus conditions
-        stimulus_cond = [data[:,i] for i in range(len(data[0]))]
-        fig3, axes = plt.subplots()
-        fig3.suptitle('No. of SPK vs Stimulus conditions')
-        axes.boxplot(stimulus_cond,showmeans=True)
+        scommand.sendall(b'set runmode stop') 
 
               
         user_input = input("Enter 'q' to quit: ")
 
         if user_input == 'q':
-            print(data) # spk & stim cond
+            '''print(data) # spk & stim cond
             print(data_df) # spk & channel
-            print("n is ", n )
+            print("n is ", n )'''
+            data_df.to_csv('CH_stim_SPK_data.csv')
             
 
 
@@ -309,29 +260,4 @@ if __name__ == '__main__':
 
 
 
-
-    # Lauri Pseudo codes
-    '''
-    #scommand.sendall(b'set runmode run')
-
-    while True:
-        # wait for stimulus computer to tell when stimuli is on the screen
-
-        # start collecting spikes from Intan
-        channelDict = SpikeDataPerTrial(["A-000","A-001","A-002","A-003"])
-
-        # update plot using the code snippets below
-
-    # open plots
-    plt.figure(1)
-    indx = 0
-    while not stopped:
-        channelDict = SpikeDataPerTrial(["A-000","A-001","A-002","A-003"])
-        if indx == 0:
-            # line handle
-        increment 
-        update handle        
-
-
-    '''
 
