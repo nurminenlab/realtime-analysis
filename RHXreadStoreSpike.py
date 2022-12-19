@@ -43,8 +43,8 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
 
-    # run for 500ms - 0.5s - to read the data
-    time.sleep(0.5) 
+    # run for 600ms - 0.6s - to read the data
+    time.sleep(0.6) 
 
     rawData = sSPK.recv(200000)
     #print(rawData)

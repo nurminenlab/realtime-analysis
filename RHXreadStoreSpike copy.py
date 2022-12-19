@@ -107,16 +107,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
     return channelDict,stim_SPK_Count
 
 
-def plotSPKvsCHNL(channelDict,trialCount):
-    for i,xy in zip(range(len(userIPchannels)),xyArr):
-        xy[0].extend(channelDict[userIPchannels[i]])
-        xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else 1 for x in range(len(channelDict[userIPchannels[i]]))])
-        sc[i].set_offsets(np.c_[xy[0],xy[1]])
-        plt.setp(axes, xlim=(0,100+(max(xy[0], default=0))))
 
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        time.sleep(0.0002)
 
 
 def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
@@ -126,16 +117,18 @@ def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     else:
         plotSPKvsSTIM_xy[stim_cond].append(SPKcount) #= [plotSPKvsSTIM_xy[stim_cond],SPKcount]
     n += 1
+    
     x1 = list(plotSPKvsSTIM_xy.keys())
+    
     y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
     yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/math.sqrt(n)) for key in plotSPKvsSTIM_xy.keys())
     ax.cla()
     ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
-
+    
     fig2.canvas.draw()
     fig2.canvas.flush_events()
     time.sleep(0.0002)
-    return n
+    return n,x1,y1
 
 def setup_TCPconnection():    
     # TCP connection setup
@@ -234,7 +227,7 @@ if __name__ == '__main__':
             for tsArr in channelDict.values(): #tsArr : time stamp Array
                 spikeCount+=len(tsArr)            
 
-            n = plotSPKvsSTIM(stim_cond,spikeCount,n)
+            n,x1,y1 = plotSPKvsSTIM(stim_cond,spikeCount,n)
         scommand.sendall(b'set runmode stop') 
 
               
@@ -245,6 +238,8 @@ if __name__ == '__main__':
             print(data_df) # spk & channel
             print("n is ", n )'''
             data_df.to_csv('CH_stim_SPK_data.csv')
+            print(x1)
+            print(y1)
             
 
 
@@ -252,12 +247,5 @@ if __name__ == '__main__':
         scommand.sendall(b'set runmode stop')
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
         
-
-
-
-
-
-
-
 
 
