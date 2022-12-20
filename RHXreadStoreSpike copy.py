@@ -100,12 +100,16 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     # get trial here => (1 stim_cond, n channels)
 
-    for ch,ax in zip(userIPchannels,axes3):
+    for i, ch in enumerate(userIPchannels):
+        ax = axes3[i]
         ax.cla()
-        ax.errorbar(x = data_df[data_df['Channel']==ch].stim_cond.unique(),
+        SEM=data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].sem()
+        MEAN = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].mean().plot(ax=ax,kind='bar',yerr = SEM)
+        
+        '''ax.errorbar(x = data_df[data_df['Channel']==ch].groupby('stim_cond')['stim_cond'],
                 y = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].aggregate('mean'), 
                 yerr=data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].aggregate('sem'),   
-                label=ch,capsize=2,fmt ='o')
+                label=ch,capsize=2,fmt ='o')'''
         ax.legend()        
         
 
