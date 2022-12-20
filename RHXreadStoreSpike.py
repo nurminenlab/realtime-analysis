@@ -96,13 +96,18 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         stim_SPK_Count[stim_cond] = spikeCount
 
     for ch in channelDict:
-        if ch not in channelDict.keys():
-            channelDict[ch] = 0
-            data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] 
-        else:    
-            data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
+        data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
 
     # get trial here => (1 stim_cond, n channels)
+
+    for ch,ax in zip(userIPchannels,axes3):
+        ax.cla()
+        ax.errorbar(x = data_df[data_df['Channel']==ch].stim_cond.unique(),
+                y = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].aggregate('mean'), 
+                yerr=data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].aggregate('sem'),   
+                label=ch,capsize=2,fmt ='o')
+        ax.legend()        
+        
 
     return channelDict,stim_SPK_Count
 
@@ -186,6 +191,7 @@ if __name__ == '__main__':
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
+
     fig, axes = plt.subplots(len(userIPchannels),1,figsize=(10, 10)) # returns fig and list of axes
     manager = plt.get_current_fig_manager()
     manager.full_screen_toggle()
@@ -209,6 +215,7 @@ if __name__ == '__main__':
     fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
     fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
 
+
     #plot setup for number of spikes and stim_conditions
     x1 = [str()]
     #y1 = np.array([None])  initializing an empty numpy array
@@ -228,6 +235,11 @@ if __name__ == '__main__':
 
     #print('Stimulus Condition Data ',stimulus_data())
     data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
+
+    fig3,axes3 = plt.subplots(len(userIPchannels),1,figsize=(10, 10))
+    
+    fig3.suptitle('channels X SPKcounts')
+
 
 
 
@@ -267,19 +279,22 @@ if __name__ == '__main__':
                 totTimeStamps[key].extend(value)
 
 
+        
+
+
+        #plot No. of SPK vs Stimulus conditions
+
+        stimulus_cond = [data[:,i] for i in range(len(data[0]))]
+        fig4, axes4 = plt.subplots()
+        fig4.suptitle('No. of SPK vs Stimulus conditions')
+        axes4.boxplot(stimulus_cond,showmeans=True)
+
         # plot No. of spikes vs Channel
-        plt.figure(3)
+        plt.figure(5)
         palette = sns.color_palette("dark:violet")
         plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
         plt.title("No. of spikes vs Channel")
         plt.ylabel("count(SPK)")
-
-
-        #plot No. of SPK vs Stimulus conditions
-        stimulus_cond = [data[:,i] for i in range(len(data[0]))]
-        fig3, axes = plt.subplots()
-        fig3.suptitle('No. of SPK vs Stimulus conditions')
-        axes.boxplot(stimulus_cond,showmeans=True)
 
               
         user_input = input("Enter 'q' to quit: ")
