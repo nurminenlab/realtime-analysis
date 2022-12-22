@@ -102,26 +102,16 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     for ch,ax in zip(userIPchannels,axes3):
         ax.cla()
-        ax.errorbar(x = data_df[data_df['Channel']==ch].stim_cond.unique(),
-                y = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].aggregate('mean'), 
-                yerr=data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].aggregate('sem'),   
-                label=ch,capsize=2,fmt ='o')
+        MEAN = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].mean()
+        SEM = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].sem()
+        ax.errorbar(x = MEAN.index, # stimulus conditions
+                    y = MEAN, 
+                    yerr= SEM,
+                    label=ch,capsize=2,fmt ='o')
         ax.legend()        
         
 
     return channelDict,stim_SPK_Count
-
-
-def plotSPKvsCHNL(channelDict,trialCount):
-    for i,xy in zip(range(len(userIPchannels)),xyArr):
-        xy[0].extend(channelDict[userIPchannels[i]])
-        xy[1].extend([None if len(channelDict[userIPchannels[i]])==0 else 1 for x in range(len(channelDict[userIPchannels[i]]))])
-        sc[i].set_offsets(np.c_[xy[0],xy[1]])
-        plt.setp(axes, xlim=(0,100+(max(xy[0], default=0))))
-
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        time.sleep(0.0002)
 
 
 def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
@@ -192,29 +182,6 @@ if __name__ == '__main__':
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
 
-    fig, axes = plt.subplots(len(userIPchannels),1,figsize=(10, 10)) # returns fig and list of axes
-    manager = plt.get_current_fig_manager()
-    manager.full_screen_toggle()
-    # fig, axes = plt.subplots(nX,nY)
-
-    #plot set up for n(len of userIPchannels) channels and SPKs
-    xyArr = []
-    xyArr.extend(([],[]) for x in range(len(userIPchannels)))
-    sc = [] # scatter plot list
-    #for axis,i in zip(axes,range(len(axes))):
-
-    if type(axes)== np.ndarray: #checking the axes type, so if only 1 channel is selected, var axes will not be a np.ndarray
-        for axis in axes:
-            plt.setp(axis, xlim=(0,550), ylim=(0,2))
-            sc.append(axis.scatter([],[],marker='|'))
-    else:
-        plt.setp(axes, xlim=(0,550), ylim=(0,2))
-        sc.append(axes.scatter([],[],marker='|')) 
-        
-    fig.suptitle('SPIKE Data for channels ')
-    fig.text(0.5, 0.04, 'Timestamps', ha='center', va='center')
-    fig.text(0.06, 0.5, 'Trials', ha='center', va='center', rotation='vertical')
-
 
     #plot setup for number of spikes and stim_conditions
     x1 = [str()]
@@ -265,7 +232,6 @@ if __name__ == '__main__':
                 data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
     
             totTimeStampsList.append(channelDict)
-            plotSPKvsCHNL(channelDict,run) 
             spikeCount = 0
             for tsArr in channelDict.values(): #tsArr : time stamp Array
                 spikeCount+=len(tsArr)            
