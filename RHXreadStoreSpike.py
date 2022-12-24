@@ -14,6 +14,8 @@ from statistics import mean
 from send_stim_condition import stimulus_data
 from numba import njit,cuda
 import pandas as pd
+import sys    
+import warnings
 def readUint32(array, arrayIndex):
     variableBytes = array[arrayIndex : arrayIndex + 4]
     variable = int.from_bytes(variableBytes, byteorder='little', signed=False)
@@ -94,16 +96,17 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         spikeCount = spikeCount + 1
 
         stim_SPK_Count[stim_cond] = spikeCount
-
+   
     for ch in channelDict:
-        data_df.loc[len(data_df)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
+
+        data_df.loc[len(data_df.index)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
 
     # get trial here => (1 stim_cond, n channels)
-
+    
     for ch,ax in zip(userIPchannels,axes3):
         ax.cla()
-        MEAN = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].mean()
-        SEM = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].sem()
+        MEAN = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].mean() # runtime warning because of mean calc (ignored it)
+        SEM = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].sem() 
         ax.errorbar(x = MEAN.index, # stimulus conditions
                     y = MEAN, 
                     yerr= SEM,
@@ -153,8 +156,11 @@ def setup_TCPconnection():
     scommand.sendall(b'execute clearalldataoutputs')
     time.sleep(0.1)
 
+
 if __name__ == '__main__':
-    
+    #np.seterr(all='raise')
+    if not sys.warnoptions:
+        warnings.simplefilter("ignore")
     # get input channels from user
     channel_window = Tk()    
     channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-008","A-009","A-010"]
@@ -202,10 +208,11 @@ if __name__ == '__main__':
 
     #print('Stimulus Condition Data ',stimulus_data())
     data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
-
     fig3,axes3 = plt.subplots(nrows=3,ncols=4,figsize=(10, 10))
     axes3  = np.reshape(axes3,(12,))
     fig3.suptitle('channels X SPKcounts')
+    manager = plt.get_current_fig_manager()
+    manager.full_screen_toggle()
 
 
 
@@ -270,6 +277,7 @@ if __name__ == '__main__':
             print(data_df) # spk & channel
             print("n is ", n )'''
             data_df.to_csv('CH_stim_SPK_data.csv')
+            
             
 
 
