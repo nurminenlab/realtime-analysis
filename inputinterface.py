@@ -16,8 +16,9 @@ for i in ch :
 def getChannelNames():
     chan = []
     for key in channels:
-        c = [key +"-" + n for n in (channels[key].get()).split(',')]
-        chan.extend(c)
+        if channels[key].get() != "":
+            c = [key +"-" + n for n in (channels[key].get()).split(',')]
+            chan.extend(c)
     return chan
 
 Button(inputChannelWindow,text="Done",command=lambda: [print("selected channels ",getChannelNames()),inputChannelWindow.destroy()]).pack()
