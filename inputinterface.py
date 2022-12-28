@@ -17,7 +17,7 @@ def getChannelNames():
     chan = []
     for key in channels:
         if channels[key].get() != "":
-            c = [key +"-" + n for n in (channels[key].get()).split(',')]
+            c = [key +"-" + f'{int(n):03d}' for n in (channels[key].get()).split(',')]
             chan.extend(c)
     return chan
 
