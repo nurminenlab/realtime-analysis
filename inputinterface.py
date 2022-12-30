@@ -8,7 +8,7 @@ channels = {}
 for i in ch :
     channel = Label(inputChannelWindow,text = "channel"+i)
     channel.pack()
-    channels[i] = {}
+    #channels[i] = {}
     channels[i] = Entry(inputChannelWindow)
     channels[i].pack(pady=(5,10))
     

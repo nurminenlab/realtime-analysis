@@ -135,7 +135,7 @@ def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
     time.sleep(0.0002)
     return n
 
-def setup_TCPconnection():    
+def setup_TCPconnection_with_Intan():    
     # TCP connection setup
     print('Connecting to TCP command server...')
     global scommand
@@ -156,6 +156,16 @@ def setup_TCPconnection():
     scommand.sendall(b'execute clearalldataoutputs')
     time.sleep(0.1)
 
+def setup_TCPconnection_receive_StimCond():    
+    host = socket.gethostname()  # as both code is running on same pc
+    port = 5000  # socket server port number
+    global client_socket
+    client_socket = socket.socket()  # instantiate
+    client_socket.connect((host, port))  # connect to the server
+    global message
+    message = 'ready'
+    global data 
+    data = ""
 
 if __name__ == '__main__':
     #np.seterr(all='raise')
@@ -216,10 +226,10 @@ if __name__ == '__main__':
 
 
     if stimulusComp_Inp:
-        setup_TCPconnection()
+        setup_TCPconnection_with_Intan()
         unique_count_stim_condn = len(list(set(stimulus_data()))) # 5 => unique(tot_Stim_condition)
         runs = len(stimulus_data())
-        data = np.empty((0,unique_count_stim_condn))
+        data1 = np.empty((0,unique_count_stim_condn))
         for i in range(len(userIPchannels)):
             tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
             tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
@@ -228,20 +238,29 @@ if __name__ == '__main__':
         scommand.sendall(b'set runmode run')
         # note : trial1 => stim_cond1 for n channels
         #        trial2 => stim_cond2 for n channels  etc
+        setup_TCPconnection_receive_StimCond()
+        for run in range(1,runs+1):
+            
+            while True and data.lower().strip() != 'end' :
 
-        for run,stim_cond in zip(range(1,runs+1),stimulus_data()):
+                client_socket.send(message.encode())  # send message
+                data = client_socket.recv(1024).decode()  # receive response
 
-            channelDict,stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
+                stim_cond = str(data)
+                channelDict,stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
 
-            if (run)%unique_count_stim_condn == 0: # every repetition
-                data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
-    
-            totTimeStampsList.append(channelDict)
-            spikeCount = 0
-            for tsArr in channelDict.values(): #tsArr : time stamp Array
-                spikeCount+=len(tsArr)            
+                if (run)%unique_count_stim_condn == 0: # every repetition
+                    data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
+        
+                totTimeStampsList.append(channelDict)
+                spikeCount = 0
+                for tsArr in channelDict.values(): #tsArr : time stamp Array
+                    spikeCount+=len(tsArr)            
 
-            n = plotSPKvsSTIM(stim_cond,spikeCount,n)
+                n = plotSPKvsSTIM(stim_cond,spikeCount,n)
+                print('ready for next stim cond')
+
+
         scommand.sendall(b'set runmode stop')  
         totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
 
@@ -252,7 +271,7 @@ if __name__ == '__main__':
 
         #plot No. of SPK vs Stimulus conditions
 
-        stimulus_cond = [data[:,i] for i in range(len(data[0]))]
+        stimulus_cond = [data1[:,i] for i in range(len(data1[0]))]
         fig4, axes4 = plt.subplots()
         fig4.suptitle('No. of SPK vs Stimulus conditions')
         axes4.boxplot(stimulus_cond,showmeans=True)
@@ -273,6 +292,9 @@ if __name__ == '__main__':
             print("n is ", n )'''
             data_df.to_csv('CH_stim_SPK_data.csv')
             
+            
+
+
     else:
         scommand.sendall(b'set runmode stop')
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
