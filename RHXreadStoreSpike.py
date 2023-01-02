@@ -142,7 +142,7 @@ def setup_TCPconnection():
     scommand = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     scommand.connect(('127.0.0.1', 5000))
 
-    print('Connecting to TCP waveform server...')
+    print('Connecting to TCP SPIKE output server...')
     global sSPK
     sSPK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sSPK.connect(('127.0.0.1', 5002))
