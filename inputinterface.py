@@ -4,6 +4,8 @@ inputChannelWindow = Tk()
 inputChannelWindow.geometry("250x500") 
 inputChannelWindow.title("Get Input channels")
 ch = ['A','B','C','D','E','F','G','H']
+
+# <128
 channels = {}
 for i in ch :
     channel = Label(inputChannelWindow,text = "channel"+i)

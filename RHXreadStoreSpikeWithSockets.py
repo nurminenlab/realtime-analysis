@@ -158,7 +158,7 @@ def setup_TCPconnection_with_Intan():
 
 def setup_TCPconnection_receive_StimCond():    
     host = socket.gethostname()  # as both code is running on same pc
-    port = 5000  # socket server port number
+    port = 5004  # socket server port number
     global client_socket
     client_socket = socket.socket()  # instantiate
     client_socket.connect((host, port))  # connect to the server
@@ -332,4 +332,3 @@ if __name__ == '__main__':
 
 
     '''
-
