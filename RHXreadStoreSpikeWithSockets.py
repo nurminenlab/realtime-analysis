@@ -112,28 +112,23 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
                     yerr= SEM,
                     label=ch,capsize=2,fmt ='o')
         ax.legend()        
-        
+        fig3.canvas.draw()
+        fig3.canvas.flush_events()
+        time.sleep(0.0002)   
 
-    return channelDict,stim_SPK_Count
+    return stim_SPK_Count
 
 
-def plotSPKvsSTIM(stim_cond,SPKcount,n): #x = stim_cond  y = SPKcount (int)
+def plotSPKvsSTIM(): 
     
-    if stim_cond not in plotSPKvsSTIM_xy.keys():
-        plotSPKvsSTIM_xy[stim_cond] = [SPKcount]    
-    else:
-        plotSPKvsSTIM_xy[stim_cond].append(SPKcount) #= [plotSPKvsSTIM_xy[stim_cond],SPKcount]
-    n += 1
-    x1 = list(plotSPKvsSTIM_xy.keys())
-    y1 = list(mean(plotSPKvsSTIM_xy[key]) for key in plotSPKvsSTIM_xy.keys())
-    yerr = list((statistics.pstdev(plotSPKvsSTIM_xy[key])/math.sqrt(n)) for key in plotSPKvsSTIM_xy.keys())
+    x1 = data_df.groupby('stim_cond')['SPK_count'].mean().index # stim_cond
+    y1 = data_df.groupby('stim_cond')['SPK_count'].mean()
+    yerr = data_df.groupby('stim_cond')['SPK_count'].sem()
     ax.cla()
     ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
-
     fig2.canvas.draw()
     fig2.canvas.flush_events()
     time.sleep(0.0002)
-    return n
 
 def setup_TCPconnection_with_Intan():    
     # TCP connection setup
@@ -190,10 +185,7 @@ if __name__ == '__main__':
     else:
         stimulusComp_Inp = False
 
-    # number of elements in the sample
-    n = 0
-    
-    
+
     # setting up plot 
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
@@ -204,23 +196,22 @@ if __name__ == '__main__':
     #y1 = np.array([None])  initializing an empty numpy array
     y1 =[int()] # initialzing with None since x1 is initialized with empty string list
     fig2, ax = plt.subplots(figsize=(8, 8))
-    ax.set_xlim(0,6) #xlim = unique_stim_conditions++
-    ax.set_ylim(0,50)
+    ax.set_xlim(0,5) 
+    ax.set_ylim(0,10)
     fig2.suptitle('No. of SPK vs Stimulus conditions')
     fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
     fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
     #ax.set_xticklabels(['a','b','c','d','e','f'])
  
     # setting up list/array to store timestamps , channel list as input , stimulus conditions
-    totTimeStampsList = []
-    plotSPKvsSTIM_xy = {}
+
     stim_SPK_Count = {}
 
     #print('Stimulus Condition Data ',stimulus_data())
     data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
     fig3,axes3 = plt.subplots(nrows=3,ncols=4,figsize=(10, 10))
     axes3  = np.reshape(axes3,(12,))
-    fig3.suptitle('channels X SPKcounts')
+    fig3.suptitle('channels,stim_cond X SPKcounts')
     manager = plt.get_current_fig_manager()
     manager.full_screen_toggle()
 
@@ -247,39 +238,19 @@ if __name__ == '__main__':
                 data = client_socket.recv(1024).decode()  # receive response
 
                 stim_cond = str(data)
-                channelDict,stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
+                stim_SPK_Count = ReadSpikeDataPerTrial(userIPchannels,stim_cond)
 
                 if (run)%unique_count_stim_condn == 0: # every repetition
                     data = np.append(data,np.array([list(stim_SPK_Count.values())]),axis = 0)
-        
-                totTimeStampsList.append(channelDict)
-                spikeCount = 0
-                for tsArr in channelDict.values(): #tsArr : time stamp Array
-                    spikeCount+=len(tsArr)            
-
-                n = plotSPKvsSTIM(stim_cond,spikeCount,n)
-                print('ready for next stim cond')
-
-
-        scommand.sendall(b'set runmode stop')  
-        totTimeStamps = defaultdict(list) # keys : channels , values : [timestamps]
-
-        for eachtrial in (totTimeStampsList): # you can list as many input dicts as you want here
-            for key, value in eachtrial.items():
-                totTimeStamps[key].extend(value)
-
-
-        #plot No. of SPK vs Stimulus conditions
-
-        stimulus_cond = [data1[:,i] for i in range(len(data1[0]))]
-        fig4, axes4 = plt.subplots()
-        fig4.suptitle('No. of SPK vs Stimulus conditions')
-        axes4.boxplot(stimulus_cond,showmeans=True)
+            
+                plotSPKvsSTIM()
+                
+        scommand.sendall(b'set runmode stop')     
 
         # plot No. of spikes vs Channel
-        plt.figure(5)
+        plt.figure(3)
         palette = sns.color_palette("dark:violet")
-        plt.bar(totTimeStamps.keys(),[len(totTimeStamps[key]) for key in totTimeStamps.keys()],color=palette)
+        plt.bar(data_df.groupby('Channel')['SPK_count'].sum().index,data_df.groupby('Channel')['SPK_count'].sum().values,color=palette)
         plt.title("No. of spikes vs Channel")
         plt.ylabel("count(SPK)")
 
@@ -287,14 +258,8 @@ if __name__ == '__main__':
         user_input = input("Enter 'q' to quit: ")
 
         if user_input == 'q':
-            '''print(data) # spk & stim cond
-            print(data_df) # spk & channel
-            print("n is ", n )'''
             data_df.to_csv('CH_stim_SPK_data.csv')
             
-            
-
-
     else:
         scommand.sendall(b'set runmode stop')
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
