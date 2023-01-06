@@ -1,13 +1,8 @@
-i=0;
-t = tcpclient('localhost', 51001);
 
-while i < 3
-    if t.NumBytesAvailable > 0
-        output = read(t);
-        data = char(output(1:4));
-        pwrcmd = str2double(data)
-        i = i+1;
-    end
+t = tcpclient('localhost', 5100);
+while t~=null
+    output = read(t);
+    data = char(output);
+    fprintf(data)
 end
-
 clear t;
