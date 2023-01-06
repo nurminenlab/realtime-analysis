@@ -1,6 +1,6 @@
 import socket
 import time
-j = "plotter ready"
+j = "plotter"
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(('localhost', 5100))
 s.listen(1)

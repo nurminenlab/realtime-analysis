@@ -1,8 +1,7 @@
-
 t = tcpclient('localhost', 5100);
-while t~=null
+if t.NumBytesAvailable > 0
     output = read(t);
-    data = char(output);
-    fprintf(data)
+    disp(char(output))
+
 end
 clear t;
