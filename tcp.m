@@ -1,7 +1,12 @@
-t = tcpclient('localhost', 5100);
+t = tcpclient('127.0.0.1', 51005);
+
 if t.NumBytesAvailable > 0
     output = read(t);
-    disp(char(output))
-
+    message = char(output);
+    fprintf(message);
 end
+write(t,'a')
+write(t,'b')
+write(t,'c')
+
 clear t;
