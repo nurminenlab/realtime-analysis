@@ -1,4 +1,4 @@
-t = tcpclient('127.0.0.1', 51005);
+t = tcpclient('localhost', 51005);
 
 if t.NumBytesAvailable > 0
     output = read(t);

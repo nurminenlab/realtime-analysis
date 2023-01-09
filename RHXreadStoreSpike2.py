@@ -2,17 +2,13 @@ from asyncio.constants import SENDFILE_FALLBACK_READBUFFER_SIZE
 import time, socket
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import math
 from ctypes import sizeof
-import statistics
 from tkinter import *
 import seaborn as sns
 import numpy as np
 from collections import defaultdict
-import random
 from statistics import mean
 from stim_condition_metaData import stimulus_data
-from numba import njit,cuda
 import pandas as pd
 import sys    
 import warnings
@@ -39,8 +35,7 @@ def readChar(array, arrayIndex):
     variable = variableBytes.decode()
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
-
-  
+ 
 def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
@@ -115,10 +110,8 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         fig3.canvas.draw()
         fig3.canvas.flush_events()
         time.sleep(0.0002)        
-        
 
     return stim_SPK_Count
-
 
 def plotSPKvsSTIM(): 
     
@@ -131,8 +124,7 @@ def plotSPKvsSTIM():
     fig2.canvas.flush_events()
     time.sleep(0.0002)
 
-
-def setup_TCPconnection():    
+def setup_Conn_INTAN():    
     # TCP connection setup
     print('Connecting to TCP command server...')
     global scommand
@@ -163,8 +155,6 @@ def setup_Conn_toReceive_stim_cond():
     print("connected from ", str(addr) ," to recieve stim conditions")
     conn2.sendall(f"{msg}".encode())
 
-
-
 if __name__ == '__main__':
     #np.seterr(all='raise')
     if not sys.warnoptions:
@@ -193,7 +183,6 @@ if __name__ == '__main__':
     print("opening plot......")
     plt.ion() # Enable interactive mode for plot
 
-
     #plot setup for number of spikes and stim_conditions
     x1 = [str()]
     #y1 = np.array([None])  initializing an empty numpy array
@@ -203,13 +192,9 @@ if __name__ == '__main__':
     fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
     fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
     #ax.set_xticklabels(['a','b','c','d','e','f'])
- 
-    # setting up list/array to store timestamps , channel list as input , stimulus conditions
 
-    
     stim_SPK_Count = {}
 
-    #print('Stimulus Condition Data ',stimulus_data())
     data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
     fig3,axes3 = plt.subplots(nrows=3,ncols=4,figsize=(10, 10))
     axes3  = np.reshape(axes3,(12,))
@@ -219,7 +204,7 @@ if __name__ == '__main__':
 
 
     if stimulusComp_Inp:
-        setup_TCPconnection()
+        setup_Conn_INTAN()
         setup_Conn_toReceive_stim_cond()
 
         for i in range(len(userIPchannels)):
@@ -243,9 +228,7 @@ if __name__ == '__main__':
 
         conn2.close()
 
-
         scommand.sendall(b'set runmode stop')  
-
 
         # plot No. of spikes vs Channel
         plt.figure(3)
@@ -263,38 +246,3 @@ if __name__ == '__main__':
     else:
         scommand.sendall(b'set runmode stop')
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
-        
-
-
-
-
-
-
-
-
-
-    # Lauri Pseudo codes
-    '''
-    #scommand.sendall(b'set runmode run')
-
-    while True:
-        # wait for stimulus computer to tell when stimuli is on the screen
-
-        # start collecting spikes from Intan
-        channelDict = SpikeDataPerTrial(["A-000","A-001","A-002","A-003"])
-
-        # update plot using the code snippets below
-
-    # open plots
-    plt.figure(1)
-    indx = 0
-    while not stopped:
-        channelDict = SpikeDataPerTrial(["A-000","A-001","A-002","A-003"])
-        if indx == 0:
-            # line handle
-        increment 
-        update handle        
-
-
-    '''
-
