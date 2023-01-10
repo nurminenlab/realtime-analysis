@@ -217,7 +217,7 @@ if __name__ == '__main__':
         #        trial2 => stim_cond2 for n channels  etc
 
         while True :
-            stim_cond = conn2.recv(1024).decode()
+            stim_cond = conn2.recv(1).decode()
             # receive data stream. it won't accept data packet greater than 1024 bytes
             if not stim_cond:
                 # if data is not received break
