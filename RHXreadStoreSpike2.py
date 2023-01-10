@@ -41,6 +41,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
     channelDict = {channel:[] for channel in inputChannelArray}
 
     # run for 600ms - 0.6s - to read the data
+    
     time.sleep(0.6) 
 
     rawData = sSPK.recv(200000)
@@ -105,7 +106,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         ax.errorbar(x = MEAN.index, # stimulus conditions
                     y = MEAN, 
                     yerr= SEM,
-                    label=ch,capsize=2,fmt ='o')
+                    label=ch,capsize=2,fmt ='o')                                      
         ax.legend()
         fig3.canvas.draw()
         fig3.canvas.flush_events()
@@ -136,6 +137,7 @@ def setup_Conn_INTAN():
     sSPK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sSPK.connect(('127.0.0.1', 5002))
 
+    # IF NOT RUNNING, START AND PRINT SOMETHING
     scommand.sendall(b'get runmode')
     time.sleep(0.1)
 
@@ -170,7 +172,7 @@ if __name__ == '__main__':
     channel_window.mainloop()
             
     if len(userIPchannels) > 10 or len(userIPchannels) < 1:
-        raise Exception("Check the number of input channels \n min :2 & max :10 ")
+        raise Exception("Check the number of input channels \n min :1 & max :10 ")
 
     if stimulus_data():
         stimulusComp_Inp = True
@@ -219,7 +221,7 @@ if __name__ == '__main__':
         while True :
             stim_cond = conn2.recv(1).decode()
             # receive data stream. it won't accept data packet greater than 1024 bytes
-            if not stim_cond:
+            if not stim_cond: # IF stim_cond == STOP
                 # if data is not received break
                 break
             print(stim_cond)

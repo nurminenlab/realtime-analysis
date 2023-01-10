@@ -5,5 +5,15 @@ def stimulus_data():
                           'd','e','b','c','a','e','a','c','d','b',
                           'a','c','b','d','e','a','d','c','b','e']
 
-    return tot_stim_condition
+    return None
+
+
+if stimulus_data():
+    stimulusComp_Inp = True
+    print('True')
+    
+else:
+    stimulusComp_Inp = False
+    print('False')
+
 
