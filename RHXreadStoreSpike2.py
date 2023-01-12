@@ -107,9 +107,9 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
                     yerr= SEM,
                     label=ch,capsize=2,fmt ='o')
         ax.legend()
-        fig3.canvas.draw()
-        fig3.canvas.flush_events()
-        time.sleep(0.0002)        
+    fig3.canvas.draw()
+    fig3.canvas.flush_events()
+    time.sleep(0.0002)        
 
     return stim_SPK_Count
 
@@ -135,12 +135,6 @@ def setup_Conn_INTAN():
     global sSPK
     sSPK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sSPK.connect(('127.0.0.1', 5002))
-
-    scommand.sendall(b'get runmode')
-    time.sleep(0.1)
-
-    scommand.sendall(b'get sampleratehertz')
-    time.sleep(0.1)
 
     scommand.sendall(b'execute clearalldataoutputs')
     time.sleep(0.1)
@@ -212,15 +206,24 @@ if __name__ == '__main__':
             tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
             scommand.sendall(tcpCommandSPKchannel)
 
-        scommand.sendall(b'set runmode run')
+        scommand.sendall(b'get runmode')
+        time.sleep(0.1)
+        runStatus = scommand.recv(100).decode() # will return 'Return: RunMode Stop' or 'Return: RunMode Run'
+        if runStatus == 'Return: RunMode Stop':
+            scommand.sendall(b'set runmode run')
+        
         # note : trial1 => stim_cond1 for n channels
         #        trial2 => stim_cond2 for n channels  etc
 
         while True :
             stim_cond = conn2.recv(1).decode()
+            print(stim_cond)
+            stim_cond = conn2.recv(1).decode()
+            print(stim_cond)
+           
             # receive data stream. it won't accept data packet greater than 1024 bytes
-            if not stim_cond:
-                # if data is not received break
+            if not stim_cond or stim_cond == 'end' :
+                # if data is not received break or if 'end' is sent 
                 break
             print(stim_cond)
             ReadSpikeDataPerTrial(userIPchannels,stim_cond)
