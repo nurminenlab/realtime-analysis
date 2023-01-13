@@ -210,7 +210,6 @@ if __name__ == '__main__':
 
     if stimulusComp_Inp:
         setup_Conn_INTAN()
-        setup_Conn_toReceive_stim_cond()
 
         for i in range(len(userIPchannels)):
             tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
@@ -218,14 +217,13 @@ if __name__ == '__main__':
             scommand.sendall(tcpCommandSPKchannel)
 
         scommand.sendall(b'get runmode')
-        time.sleep(0.1)
         runStatus = scommand.recv(100).decode() # will return 'Return: RunMode Stop' or 'Return: RunMode Run'
         if runStatus == 'Return: RunMode Stop':
             scommand.sendall(b'set runmode run')
         
         # note : trial1 => stim_cond1 for n channels
         #        trial2 => stim_cond2 for n channels  etc
-
+        setup_Conn_toReceive_stim_cond()
         while True :
             stim_cond = conn2.recv(1).decode()
             t_sleep = conn3.recv(3).decode()
@@ -236,9 +234,11 @@ if __name__ == '__main__':
                 # if data is not received break or if 'x' is received 
                 break
             ReadSpikeDataPerTrial(userIPchannels,stim_cond,float(t_sleep))
+            
             #plotSPKvsSTIM()
 
         conn2.close()
+        conn3.close()
 
         scommand.sendall(b'set runmode stop')  
 
