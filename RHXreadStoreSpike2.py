@@ -36,13 +36,13 @@ def readChar(array, arrayIndex):
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
  
-def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
+def ReadSpikeDataPerTrial(inputChannelArray,stim_cond,t_sleep):
 
     channelDict = {channel:[] for channel in inputChannelArray}
 
     # run for 600ms - 0.6s - to read the data
     
-    time.sleep(0.6) 
+    time.sleep(t_sleep) 
 
     rawData = sSPK.recv(200000)
     #print(rawData)
@@ -145,10 +145,20 @@ def setup_Conn_toReceive_stim_cond():
     s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s2.bind(('localhost', 51005))
     s2.listen(1)
-    global conn2,addr
-    conn2, addr = s2.accept()
-    print("connected from ", str(addr) ," to recieve stim conditions")
+    global conn2,addr2
+    conn2, addr2 = s2.accept()
+    print("connected from ", str(addr2) ," to receive stim conditions")
     conn2.sendall(f"{msg}".encode())
+
+
+    j1 = "Plotter Ready to recieve runtime"
+    s3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s3.bind(('localhost', 51010))
+    s3.listen(1)
+    global conn3,addr3
+    conn3, addr3 = s3.accept()
+    print("connected from ", addr3,"to receive t time to collect SPK")
+    conn3.sendall(f"{j1}".encode())
 
 if __name__ == '__main__':
     #np.seterr(all='raise')
@@ -218,17 +228,15 @@ if __name__ == '__main__':
 
         while True :
             stim_cond = conn2.recv(1).decode()
+            t_sleep = conn3.recv(3).decode()
             print(stim_cond)
-            stim_cond = conn2.recv(1).decode()
-            print(stim_cond)
-           
+            print(t_sleep)
             # receive data stream. it won't accept data packet greater than 1024 bytes
-            if not stim_cond or stim_cond == 'end' :
-                # if data is not received break or if 'end' is sent 
+            if not stim_cond or stim_cond == 'x' :
+                # if data is not received break or if 'x' is received 
                 break
-            print(stim_cond)
-            ReadSpikeDataPerTrial(userIPchannels,stim_cond)
-            plotSPKvsSTIM()
+            ReadSpikeDataPerTrial(userIPchannels,stim_cond,float(t_sleep))
+            #plotSPKvsSTIM()
 
         conn2.close()
 
