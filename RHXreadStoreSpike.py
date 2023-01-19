@@ -12,7 +12,6 @@ from collections import defaultdict
 import random
 from statistics import mean
 from stim_condition_metaData import stimulus_data
-from numba import njit,cuda
 import pandas as pd
 import sys    
 import warnings

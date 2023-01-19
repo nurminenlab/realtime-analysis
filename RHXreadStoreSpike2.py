@@ -143,22 +143,22 @@ def setup_Conn_INTAN():
 def setup_Conn_toReceive_stim_cond():
     msg = "Plotter Ready!!"
     s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s2.bind(('localhost', 51005))
+    s2.bind(('172.27.85.52', 51007))
     s2.listen(1)
     global conn2,addr2
     conn2, addr2 = s2.accept()
     print("connected from ", str(addr2) ," to receive stim conditions")
-    conn2.sendall(f"{msg}".encode())
+    #conn2.sendall(f"{msg}".encode())
 
 
     j1 = "Plotter Ready to recieve runtime"
     s3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s3.bind(('localhost', 51010))
+    s3.bind(('172.27.85.52', 51008))
     s3.listen(1)
     global conn3,addr3
     conn3, addr3 = s3.accept()
     print("connected from ", addr3,"to receive t time to collect SPK")
-    conn3.sendall(f"{j1}".encode())
+    #conn3.sendall(f"{j1}".encode())
 
 if __name__ == '__main__':
     #np.seterr(all='raise')
