@@ -8,7 +8,7 @@ import seaborn as sns
 import numpy as np
 from collections import defaultdict
 from statistics import mean
-from stim_condition_metaData import stimulus_data
+
 import pandas as pd
 import sys    
 import warnings
@@ -230,7 +230,7 @@ if __name__ == '__main__':
             print(stim_cond)
             print(t_sleep)
             # receive data stream. it won't accept data packet greater than 1024 bytes
-            if not stim_cond or stim_cond == 'x' :
+            if stim_cond == 'x':
                 # if data is not received break or if 'x' is received 
                 break
             ReadSpikeDataPerTrial(userIPchannels,stim_cond,float(t_sleep))
