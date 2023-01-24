@@ -36,17 +36,22 @@ def readChar(array, arrayIndex):
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
  
-def ReadSpikeDataPerTrial(inputChannelArray,stim_cond,t_sleep):
+def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
 
     # run for 600ms - 0.6s - to read the data
     
-    time.sleep(t_sleep) 
-
-    rawData = sSPK.recv(200000)
-    #print(rawData)
-
+    rawData = bytearray()
+    state = conn3.recv(1).decode()
+    print("start")
+    while state == '1':
+        rawData += bytearray(sSPK.recv(200000))
+        state = conn3.recv(1).decode()
+        if state == '0' or not state:
+            print("stop")
+            break
+ 
     spikeBytesPerBlock = 14
 
     if len(rawData) % spikeBytesPerBlock != 0:
@@ -177,12 +182,7 @@ if __name__ == '__main__':
     if len(userIPchannels) > 10 or len(userIPchannels) < 1:
         raise Exception("Check the number of input channels \n min :1 & max :10 ")
 
-    if stimulus_data():
-        stimulusComp_Inp = True
-        
-    else:
-        stimulusComp_Inp = False
-
+    stimulusComp_Inp = True
     
     # setting up plot 
     print("opening plot......")
@@ -226,20 +226,20 @@ if __name__ == '__main__':
         setup_Conn_toReceive_stim_cond()
         while True :
             stim_cond = conn2.recv(1).decode()
-            t_sleep = conn3.recv(3).decode()
-            print(stim_cond)
-            print(t_sleep)
+
+            print("stim condition recieved :", stim_cond)
+
+            #print(t_sleep)
             # receive data stream. it won't accept data packet greater than 1024 bytes
-            if stim_cond == 'x':
+            if stim_cond == 'x' or not stim_cond:
                 # if data is not received break or if 'x' is received 
                 break
-            ReadSpikeDataPerTrial(userIPchannels,stim_cond,float(t_sleep))
-            
+            ReadSpikeDataPerTrial(userIPchannels,stim_cond)
             #plotSPKvsSTIM()
 
-        conn2.close()
+        
         conn3.close()
-
+        conn2.close()
         scommand.sendall(b'set runmode stop')  
 
         # plot No. of spikes vs Channel

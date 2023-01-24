@@ -64,8 +64,6 @@ write(t2,num2str(0.6));
 write(t1,'c');
 write(t2,num2str(0.5));
 
-
-
 clear t1;
 clear t2;
 
