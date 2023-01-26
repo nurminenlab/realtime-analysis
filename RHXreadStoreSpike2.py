@@ -36,20 +36,21 @@ def readChar(array, arrayIndex):
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
  
-def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
+def ReadSpikeDataPerTrial(inputChannelArray,stim_cond,state):
 
     channelDict = {channel:[] for channel in inputChannelArray}
 
     # run for 600ms - 0.6s - to read the data
     
     rawData = bytearray()
-    state = conn3.recv(1).decode()
-    print("start")
+    
+    
     while state == '1':
-        rawData += bytearray(sSPK.recv(200000))
+        print("start",state)
+        rawData += bytearray(sSPK.recv(14)) # check if this working
         state = conn3.recv(1).decode()
         if state == '0' or not state:
-            print("stop")
+            print("stop",state)
             break
  
     spikeBytesPerBlock = 14
@@ -234,7 +235,8 @@ if __name__ == '__main__':
             if stim_cond == 'x' or not stim_cond:
                 # if data is not received break or if 'x' is received 
                 break
-            ReadSpikeDataPerTrial(userIPchannels,stim_cond)
+            state = conn3.recv(1).decode()
+            ReadSpikeDataPerTrial(userIPchannels,stim_cond,state)
             #plotSPKvsSTIM()
 
         
