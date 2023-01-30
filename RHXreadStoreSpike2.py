@@ -36,21 +36,28 @@ def readChar(array, arrayIndex):
     arrayIndex = arrayIndex + 5    
     return variable,arrayIndex
  
-def ReadSpikeDataPerTrial(inputChannelArray,stim_cond,state):
+def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
 
     # run for 600ms - 0.6s - to read the data
     
     rawData = bytearray()
-    
+
+    state = conn3.recv(1).decode()
     
     while state == '1':
         print("start",state)
-        rawData += bytearray(sSPK.recv(14)) # check if this working
-        state = conn3.recv(1).decode()
-        if state == '0' or not state:
-            print("stop",state)
+        rawData += bytearray(sSPK.recv(200000)) # check if this working
+
+        conn3.setblocking(False)
+        state0 = conn3.recv(1).decode()
+        
+        if state0 == None or state0 == 0:
+            print("none")
+            continue
+        if state0 == '0' :
+            print("stop",state0)
             break
  
     spikeBytesPerBlock = 14
@@ -98,7 +105,6 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond,state):
         spikeCount = spikeCount + 1
 
         stim_SPK_Count[stim_cond] = spikeCount
-   
     for ch in channelDict:
 
         data_df.loc[len(data_df.index)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
@@ -163,6 +169,7 @@ def setup_Conn_toReceive_stim_cond():
     s3.listen(1)
     global conn3,addr3
     conn3, addr3 = s3.accept()
+
     print("connected from ", addr3,"to receive t time to collect SPK")
     #conn3.sendall(f"{j1}".encode())
 
@@ -235,8 +242,8 @@ if __name__ == '__main__':
             if stim_cond == 'x' or not stim_cond:
                 # if data is not received break or if 'x' is received 
                 break
-            state = conn3.recv(1).decode()
-            ReadSpikeDataPerTrial(userIPchannels,stim_cond,state)
+            
+            ReadSpikeDataPerTrial(userIPchannels,stim_cond)
             #plotSPKvsSTIM()
 
         
