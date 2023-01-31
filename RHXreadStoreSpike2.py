@@ -45,17 +45,15 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
     rawData = bytearray()
 
     state = conn3.recv(1).decode()
-    
+    print("start ", state)
     while state == '1':
-        print("start",state)
         rawData += bytearray(sSPK.recv(200000)) # check if this working
-
-        conn3.setblocking(False)
-        state0 = conn3.recv(1).decode()
-        
-        if state0 == None or state0 == 0:
-            print("none")
-            continue
+        try:
+            state0 = conn3.recv(1).decode()        
+        except conn3.timeout as e:
+            if e == 'Timed out':
+                print("waiting")
+                pass
         if state0 == '0' :
             print("stop",state0)
             break
@@ -164,13 +162,14 @@ def setup_Conn_toReceive_stim_cond():
 
 
     j1 = "Plotter Ready to recieve runtime"
+    global s3,conn3
     s3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s3.bind(('172.27.85.52', 51008))
     s3.listen(1)
-    global conn3,addr3
-    conn3, addr3 = s3.accept()
+    conn3, addr3  = s3.accept()
 
-    print("connected from ", addr3,"to receive t time to collect SPK")
+    conn3.settimeout(0.1)
+    print("connected to receive t time to collect SPK")
     #conn3.sendall(f"{j1}".encode())
 
 if __name__ == '__main__':
@@ -247,7 +246,7 @@ if __name__ == '__main__':
             #plotSPKvsSTIM()
 
         
-        conn3.close()
+        s3.close()
         conn2.close()
         scommand.sendall(b'set runmode stop')  
 
