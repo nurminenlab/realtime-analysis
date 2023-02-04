@@ -39,24 +39,21 @@ def readChar(array, arrayIndex):
 def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
-
-    # run for 600ms - 0.6s - to read the data
-    
-    rawData = bytearray()
-
     state = conn3.recv(1).decode()
-    print("start ", state)
-    while state == '1':
-        rawData += bytearray(sSPK.recv(200000)) # check if this working
+    if state == '1': #spikeOutputON
+        spikeOutputON()
+    while True:
+        if state == '0': #spikeOutputOFF
+                print("stop SPK output")
+                spikeOutputOFF()
+                break
+        print("rec....")
         try:
-            state0 = conn3.recv(1).decode()        
-        except conn3.timeout as e:
-            if e == 'Timed out':
-                print("waiting")
-                pass
-        if state0 == '0' :
-            print("stop",state0)
-            break
+            state = conn3.recv(1).decode()
+        except:
+            pass            
+
+    rawData = sSPK.recv(200000) # take the SPK data from the buffer socket
  
     spikeBytesPerBlock = 14
 
@@ -172,6 +169,23 @@ def setup_Conn_toReceive_stim_cond():
     print("connected to receive t time to collect SPK")
     #conn3.sendall(f"{j1}".encode())
 
+def spikeOutputON():
+    for i in range(len(userIPchannels)):
+        tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
+        tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
+        scommand.sendall(tcpCommandSPKchannel)
+    
+    time.sleep(0.2)
+
+def spikeOutputOFF():
+    for i in range(len(userIPchannels)):
+        tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike false;" 
+        tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
+        scommand.sendall(tcpCommandSPKchannel)
+
+    time.sleep(0.2)
+
+
 if __name__ == '__main__':
     #np.seterr(all='raise')
     if not sys.warnoptions:
@@ -214,15 +228,10 @@ if __name__ == '__main__':
     manager = plt.get_current_fig_manager()
     manager.full_screen_toggle()
 
-
     if stimulusComp_Inp:
         setup_Conn_INTAN()
 
-        for i in range(len(userIPchannels)):
-            tcpCommandSPKchannel ="set "+userIPchannels[i]+".tcpdataoutputenabledspike true;" 
-            tcpCommandSPKchannel = tcpCommandSPKchannel.encode("utf-8")
-            scommand.sendall(tcpCommandSPKchannel)
-
+        
         scommand.sendall(b'get runmode')
         runStatus = scommand.recv(100).decode() # will return 'Return: RunMode Stop' or 'Return: RunMode Run'
         if runStatus == 'Return: RunMode Stop':

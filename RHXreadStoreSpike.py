@@ -11,7 +11,7 @@ import numpy as np
 from collections import defaultdict
 import random
 from statistics import mean
-from stim_condition_metaData import stimulus_data
+#from stim_condition_metaData import stimulus_data
 import pandas as pd
 import sys    
 import warnings
@@ -170,11 +170,11 @@ if __name__ == '__main__':
     if len(userIPchannels) > 10 or len(userIPchannels) < 1:
         raise Exception("Check the number of input channels \n min :2 & max :10 ")
 
-    if stimulus_data():
-        stimulusComp_Inp = True
+    #if stimulus_data():
+    stimulusComp_Inp = True
         
-    else:
-        stimulusComp_Inp = False
+    '''else:
+        stimulusComp_Inp = False'''
 
     
     # setting up plot 
