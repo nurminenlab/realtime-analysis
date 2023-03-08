@@ -39,7 +39,18 @@ def readChar(array, arrayIndex):
 def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
 
     channelDict = {channel:[] for channel in inputChannelArray}
-    state = conn3.recv(1).decode()
+    
+    # socket.setdefaulttimeout(50)
+    state = None
+    while not state:
+        try:
+            state = conn3.recv(1).decode()
+        except:
+            pass
+
+
+
+    
     if state == '1': #spikeOutputON
         spikeOutputON()
     while True:
@@ -117,7 +128,7 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         ax.legend()
     fig3.canvas.draw()
     fig3.canvas.flush_events()
-    time.sleep(0.0002)        
+    time.sleep(0.002)        
 
     return stim_SPK_Count
 
@@ -130,7 +141,7 @@ def plotSPKvsSTIM():
     ax.errorbar(x1,y1,yerr=yerr,capsize=2,fmt ='o')
     fig2.canvas.draw()
     fig2.canvas.flush_events()
-    time.sleep(0.0002)
+    time.sleep(0.002)
 
 def setup_Conn_INTAN():    
     # TCP connection setup
@@ -188,6 +199,7 @@ def spikeOutputOFF():
 
 if __name__ == '__main__':
     #np.seterr(all='raise')
+
     if not sys.warnoptions:
         warnings.simplefilter("ignore")
     # get input channels from user
@@ -240,7 +252,9 @@ if __name__ == '__main__':
         # note : trial1 => stim_cond1 for n channels
         #        trial2 => stim_cond2 for n channels  etc
         setup_Conn_toReceive_stim_cond()
+        
         while True :
+
             stim_cond = conn2.recv(1).decode()
 
             print("stim condition recieved :", stim_cond)
@@ -252,7 +266,7 @@ if __name__ == '__main__':
                 break
             
             ReadSpikeDataPerTrial(userIPchannels,stim_cond)
-            #plotSPKvsSTIM()
+            plotSPKvsSTIM()
 
         
         s3.close()
@@ -266,7 +280,7 @@ if __name__ == '__main__':
         plt.title("No. of spikes vs Channel")
         plt.ylabel("count(SPK)")        
 
-       
+    
         user_input = input("Enter 'q' to quit: ")
 
         if user_input == 'q':
@@ -275,3 +289,8 @@ if __name__ == '__main__':
     else:
         scommand.sendall(b'set runmode stop')
         raise Exception("No Stimulus Input Present, intan TCP connection terminated")
+
+'''    except Exception as error:
+        print(error)
+        print("terminated")
+        scommand.sendall(b'set runmode stop')'''
