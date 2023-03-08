@@ -47,22 +47,28 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
             state = conn3.recv(1).decode()
         except:
             pass
+    
+    '''while True:
+        state = conn3.recv(1).decode()
+        if not state:
+            break'''
 
 
 
     
     if state == '1': #spikeOutputON
         spikeOutputON()
-    while True:
-        if state == '0': #spikeOutputOFF
-                print("stop SPK output")
-                spikeOutputOFF()
-                break
-        print("rec....")
+        print("start SPK output")
+    while state == '1':
+        print(".") # to denote spike o/p is ON 
         try:
             state = conn3.recv(1).decode()
         except:
-            pass            
+            pass
+        if state == '0': #spikeOutputOFF
+            print("stop SPK output")
+            spikeOutputOFF()
+            break            
 
     rawData = sSPK.recv(200000) # take the SPK data from the buffer socket
  
@@ -200,97 +206,98 @@ def spikeOutputOFF():
 if __name__ == '__main__':
     #np.seterr(all='raise')
 
-    if not sys.warnoptions:
-        warnings.simplefilter("ignore")
-    # get input channels from user
-    channel_window = Tk()    
-    channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-008","A-009","A-010"]
-    userIPchannels=[]
-    for x in range(len(channels)):
-        l = Checkbutton(channel_window, text=channels[x], variable=channels[x],command=lambda x=channels[x]:userIPchannels.append(x))
-        l.pack(anchor = 'w')
-    Button(channel_window,text="Ok",command=lambda: [print("selected channels ",userIPchannels),channel_window.destroy()]).pack()
-    channel_window.mainloop()
+
+    try:
+        if not sys.warnoptions:
+            warnings.simplefilter("ignore")
+        # get input channels from user
+        channel_window = Tk()    
+        channels = ["A-000","A-001","A-002","A-003","A-004","A-005","A-006","A-007","A-008","A-009","A-010"]
+        userIPchannels=[]
+        for x in range(len(channels)):
+            l = Checkbutton(channel_window, text=channels[x], variable=channels[x],command=lambda x=channels[x]:userIPchannels.append(x))
+            l.pack(anchor = 'w')
+        Button(channel_window,text="Ok",command=lambda: [print("selected channels ",userIPchannels),channel_window.destroy()]).pack()
+        channel_window.mainloop()
+                
+        if len(userIPchannels) > 10 or len(userIPchannels) < 1:
+            raise Exception("Check the number of input channels \n min :1 & max :10 ")
+
+        stimulusComp_Inp = True
+        
+        # setting up plot 
+        print("opening plot......")
+        plt.ion() # Enable interactive mode for plot
+
+        #plot setup for number of spikes and stim_conditions
+        x1 = [str()]
+        #y1 = np.array([None])  initializing an empty numpy array
+        y1 =[int()] # initialzing with None since x1 is initialized with empty string list
+        fig2, ax = plt.subplots(figsize=(8, 8))
+        fig2.suptitle('No. of SPK vs Stimulus conditions')
+        fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
+        fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
+        #ax.set_xticklabels(['a','b','c','d','e','f'])
+
+        stim_SPK_Count = {}
+
+        data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
+        fig3,axes3 = plt.subplots(nrows=3,ncols=4,figsize=(10, 10))
+        axes3  = np.reshape(axes3,(12,))
+        fig3.suptitle('channels,stim_cond X SPKcounts')
+        manager = plt.get_current_fig_manager()
+        manager.full_screen_toggle()
+
+        if stimulusComp_Inp:
+            setup_Conn_INTAN()
+
             
-    if len(userIPchannels) > 10 or len(userIPchannels) < 1:
-        raise Exception("Check the number of input channels \n min :1 & max :10 ")
-
-    stimulusComp_Inp = True
-    
-    # setting up plot 
-    print("opening plot......")
-    plt.ion() # Enable interactive mode for plot
-
-    #plot setup for number of spikes and stim_conditions
-    x1 = [str()]
-    #y1 = np.array([None])  initializing an empty numpy array
-    y1 =[int()] # initialzing with None since x1 is initialized with empty string list
-    fig2, ax = plt.subplots(figsize=(8, 8))
-    fig2.suptitle('No. of SPK vs Stimulus conditions')
-    fig2.text(0.5, 0.04, 'Stimulus conditions', ha='center', va='center')
-    fig2.text(0.06, 0.5, 'count(SPK)', ha='center', va='center', rotation='vertical')
-    #ax.set_xticklabels(['a','b','c','d','e','f'])
-
-    stim_SPK_Count = {}
-
-    data_df = pd.DataFrame(columns=['Channel','stim_cond','SPK_count'])
-    fig3,axes3 = plt.subplots(nrows=3,ncols=4,figsize=(10, 10))
-    axes3  = np.reshape(axes3,(12,))
-    fig3.suptitle('channels,stim_cond X SPKcounts')
-    manager = plt.get_current_fig_manager()
-    manager.full_screen_toggle()
-
-    if stimulusComp_Inp:
-        setup_Conn_INTAN()
-
-        
-        scommand.sendall(b'get runmode')
-        runStatus = scommand.recv(100).decode() # will return 'Return: RunMode Stop' or 'Return: RunMode Run'
-        if runStatus == 'Return: RunMode Stop':
-            scommand.sendall(b'set runmode run')
-        
-        # note : trial1 => stim_cond1 for n channels
-        #        trial2 => stim_cond2 for n channels  etc
-        setup_Conn_toReceive_stim_cond()
-        
-        while True :
-
-            stim_cond = conn2.recv(1).decode()
-
-            print("stim condition recieved :", stim_cond)
-
-            #print(t_sleep)
-            # receive data stream. it won't accept data packet greater than 1024 bytes
-            if stim_cond == 'x' or not stim_cond:
-                # if data is not received break or if 'x' is received 
-                break
+            scommand.sendall(b'get runmode')
+            runStatus = scommand.recv(100).decode() # will return 'Return: RunMode Stop' or 'Return: RunMode Run'
+            if runStatus == 'Return: RunMode Stop':
+                scommand.sendall(b'set runmode run')
             
-            ReadSpikeDataPerTrial(userIPchannels,stim_cond)
-            plotSPKvsSTIM()
-
-        
-        s3.close()
-        conn2.close()
-        scommand.sendall(b'set runmode stop')  
-
-        # plot No. of spikes vs Channel
-        plt.figure(3)
-        palette = sns.color_palette("dark:red")
-        plt.bar(data_df.groupby('Channel')['SPK_count'].sum().index,data_df.groupby('Channel')['SPK_count'].sum().values,color=palette)
-        plt.title("No. of spikes vs Channel")
-        plt.ylabel("count(SPK)")        
-
-    
-        user_input = input("Enter 'q' to quit: ")
-
-        if user_input == 'q':
-            data_df.to_csv('CH_stim_SPK_data.csv')
+            # note : trial1 => stim_cond1 for n channels
+            #        trial2 => stim_cond2 for n channels  etc
+            setup_Conn_toReceive_stim_cond()
             
-    else:
-        scommand.sendall(b'set runmode stop')
-        raise Exception("No Stimulus Input Present, intan TCP connection terminated")
+            while True :
 
-'''    except Exception as error:
+                stim_cond = conn2.recv(1).decode()
+
+                print("stim condition recieved :", stim_cond)
+
+                #print(t_sleep)
+                # receive data stream. it won't accept data packet greater than 1024 bytes
+                if stim_cond == 'x' or not stim_cond:
+                    # if data is not received break or if 'x' is received 
+                    break
+                
+                ReadSpikeDataPerTrial(userIPchannels,stim_cond)
+                plotSPKvsSTIM()
+
+            
+            s3.close()
+            conn2.close()
+            scommand.sendall(b'set runmode stop')  
+
+            # plot No. of spikes vs Channel
+            plt.figure(3)
+            palette = sns.color_palette("dark:red")
+            plt.bar(data_df.groupby('Channel')['SPK_count'].sum().index,data_df.groupby('Channel')['SPK_count'].sum().values,color=palette)
+            plt.title("No. of spikes vs Channel")
+            plt.ylabel("count(SPK)")        
+
+            user_input = input("Enter 'q' to quit: ")
+
+            if user_input == 'q':
+                data_df.to_csv('CH_stim_SPK_data.csv')
+                
+        else:
+            scommand.sendall(b'set runmode stop')
+            raise Exception("No Stimulus Input Present, intan TCP connection terminated")
+
+    except Exception as error:
         print(error)
         print("terminated")
-        scommand.sendall(b'set runmode stop')'''
+        scommand.sendall(b'set runmode stop')
