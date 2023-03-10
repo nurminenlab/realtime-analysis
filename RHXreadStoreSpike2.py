@@ -47,19 +47,21 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
             state = conn3.recv(1).decode()
         except:
             pass
+        if state == 'q':
+            break
     
     '''while True:
         state = conn3.recv(1).decode()
         if not state:
             break'''
-
-
-
     
     if state == '1': #spikeOutputON
         spikeOutputON()
         print("start SPK output")
-    while state == '1':
+
+    while True:
+        if state == 'q':
+            break
         print(".") # to denote spike o/p is ON 
         try:
             state = conn3.recv(1).decode()
@@ -68,73 +70,77 @@ def ReadSpikeDataPerTrial(inputChannelArray,stim_cond):
         if state == '0': #spikeOutputOFF
             print("stop SPK output")
             spikeOutputOFF()
-            break            
-
-    rawData = sSPK.recv(200000) # take the SPK data from the buffer socket
- 
-    spikeBytesPerBlock = 14
-
-    if len(rawData) % spikeBytesPerBlock != 0:
-        raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
-
-    numBlocks = int((len(rawData) / spikeBytesPerBlock))
-
-    rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
-    spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
-    spikeCount = 0
-    SPKchannelArray =[]
-
-    '''get channel name when dealing with just one channel
-    channelName = rawData[4:9]
-    print(channelName.decode()) '''
-
-    for block in range(numBlocks): # loops through every SPIKE from all streamed channels
-        # Expect 4 bytes to be TCP Magic Number as uint32.
-        # If not what's expected, raise an exception.
-        magicNumber, rawIndex = readUint32(rawData, rawIndex)
-    
-        if magicNumber != 0x3ae2710f:
-            raise Exception('Error... magic number incorrect')  
+            break  
+                    
+    if state == 'q':
+        rawData = 0
         
-        #reading channel that has spike and appending it
-        SPKchannel, rawIndex =readChar(rawData,rawIndex)
-        if SPKchannel not in SPKchannelArray:
-            SPKchannelArray.append(SPKchannel) 
+    else:
+        rawData = sSPK.recv(200000) # take the SPK data from the buffer socket
+ 
+        spikeBytesPerBlock = 14
 
-        # Expect 4 bytes to be timestamp as int32.
-        rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
-        rawTimestamp = round(rawTimestamp/20)
-        # appending timestamp to the associated channel in the channel dictionary
-        channelDict[SPKchannel].append(rawTimestamp)
+        if len(rawData) % spikeBytesPerBlock != 0:
+            raise Exception('An unexpected amount of data arrived that is not an integer multiple of the expected data size per block')
 
-        # append timestamp of every spike to the spikeTimestamp list
-        spikeTimestamp.append(rawTimestamp)
+        numBlocks = int((len(rawData) / spikeBytesPerBlock))
 
-        #    Expect 1 bytes of spike ID - it's always 1 hence skipping the next line and simply incrementing the rawIndex by 1
-        #   spikeID, rawIndex = readUint16(rawData, rawIndex)  
-        rawIndex = rawIndex + 1
-        # append spikeID of every spike to the spikeIDarray list
-        spikeCount = spikeCount + 1
+        rawIndex = 0 # Index used to read the raw data that came in through the TCP socket
+        spikeTimestamp = [] # List used to contain scaled timestamp values in seconds
+        spikeCount = 0
+        SPKchannelArray =[]
 
-        stim_SPK_Count[stim_cond] = spikeCount
-    for ch in channelDict:
+        '''get channel name when dealing with just one channel
+        channelName = rawData[4:9]
+        print(channelName.decode()) '''
 
-        data_df.loc[len(data_df.index)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
+        for block in range(numBlocks): # loops through every SPIKE from all streamed channels
+            # Expect 4 bytes to be TCP Magic Number as uint32.
+            # If not what's expected, raise an exception.
+            magicNumber, rawIndex = readUint32(rawData, rawIndex)
+        
+            if magicNumber != 0x3ae2710f:
+                raise Exception('Error... magic number incorrect')  
+            
+            #reading channel that has spike and appending it
+            SPKchannel, rawIndex =readChar(rawData,rawIndex)
+            if SPKchannel not in SPKchannelArray:
+                SPKchannelArray.append(SPKchannel) 
 
-    # get trial here => (1 stim_cond, n channels)
-    
-    for ch,ax in zip(userIPchannels,axes3):
-        ax.cla()
-        MEAN = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].mean() # runtime warning because of mean calc (ignored it)
-        SEM = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].sem() 
-        ax.errorbar(x = MEAN.index, # stimulus conditions
-                    y = MEAN, 
-                    yerr= SEM,
-                    label=ch,capsize=2,fmt ='o')                                      
-        ax.legend()
-    fig3.canvas.draw()
-    fig3.canvas.flush_events()
-    time.sleep(0.002)        
+            # Expect 4 bytes to be timestamp as int32.
+            rawTimestamp, rawIndex = readInt32(rawData, rawIndex)
+            rawTimestamp = round(rawTimestamp/20)
+            # appending timestamp to the associated channel in the channel dictionary
+            channelDict[SPKchannel].append(rawTimestamp)
+
+            # append timestamp of every spike to the spikeTimestamp list
+            spikeTimestamp.append(rawTimestamp)
+
+            #    Expect 1 bytes of spike ID - it's always 1 hence skipping the next line and simply incrementing the rawIndex by 1
+            #   spikeID, rawIndex = readUint16(rawData, rawIndex)  
+            rawIndex = rawIndex + 1
+            # append spikeID of every spike to the spikeIDarray list
+            spikeCount = spikeCount + 1
+
+            stim_SPK_Count[stim_cond] = spikeCount
+        for ch in channelDict:
+
+            data_df.loc[len(data_df.index)] = [ch,stim_cond,len(channelDict[ch])] # CHECK time(append) VS time(loc)
+
+        # get trial here => (1 stim_cond, n channels)
+        
+        for ch,ax in zip(userIPchannels,axes3):
+            ax.cla()
+            MEAN = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].mean() # runtime warning because of mean calc (ignored it)
+            SEM = data_df[data_df['Channel']==ch].groupby('stim_cond')['SPK_count'].sem() 
+            ax.errorbar(x = MEAN.index, # stimulus conditions
+                        y = MEAN, 
+                        yerr= SEM,
+                        label=ch,capsize=2,fmt ='o')                                      
+            ax.legend()
+        fig3.canvas.draw()
+        fig3.canvas.flush_events()
+        time.sleep(0.002)        
 
     return stim_SPK_Count
 
