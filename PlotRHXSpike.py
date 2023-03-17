@@ -294,6 +294,14 @@ if __name__ == '__main__':
             plt.title("No. of spikes vs Channel")
             plt.ylabel("count(SPK)")        
 
+            df_ch_stimC =  data_df.groupby(['Channel','stim_cond']).sum().reset_index().rename(columns={'SPK_count':'tot_SPK_count'})
+            fig4, axs = plt.subplots(4,4, figsize=(20,20))
+            axs = axs.ravel() # flatten the axis array
+
+            for i,ch in zip(range(df_ch_stimC['Channel'].nunique()),df_ch_stimC['Channel'].unique()):                
+                axs[i].imshow(np.array(df_ch_stimC[df_ch_stimC['Channel'] == ch]['tot_SPK_count']).reshape(2,2), cmap='Blues', interpolation='nearest')
+                axs[i].set_title(df_ch_stimC['Channel'].unique()[i])
+            
             user_input = input("Enter 'q' to quit: ")
 
             if user_input == 'q':
