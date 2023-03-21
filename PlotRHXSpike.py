@@ -299,7 +299,7 @@ if __name__ == '__main__':
             axs = axs.ravel() # flatten the axis array
 
             for i,ch in zip(range(df_ch_stimC['Channel'].nunique()),df_ch_stimC['Channel'].unique()):                
-                axs[i].imshow(np.array(df_ch_stimC[df_ch_stimC['Channel'] == ch]['tot_SPK_count']).reshape(2,2), cmap='Blues', interpolation='nearest')
+                axs[i].imshow(np.array(df_ch_stimC[df_ch_stimC['Channel'] == ch]['tot_SPK_count']).reshape(int(df_ch_stimC['Channel'].nunique()/2),int(df_ch_stimC['Channel'].nunique()/2)), cmap='Blues', interpolation='nearest')
                 axs[i].set_title(df_ch_stimC['Channel'].unique()[i])
             
             user_input = input("Enter 'q' to quit: ")
